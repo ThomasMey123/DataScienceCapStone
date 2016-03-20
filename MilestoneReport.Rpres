@@ -1,0 +1,204 @@
+<style>
+.small-code pre code {
+  font-size: 1em;
+}
+</style>
+
+
+
+MilestoneReport
+========================================================
+author: Thomas Mey
+date: 17.03.2016
+
+- This presentation is part of the Data Science Capstone project at Coursera.
+- It provides a summary and histograms of the data provided for this course by swiftkey, the findings achieved so far and an Outlook on the further project.
+- The goal of the project is a prediction model that allows to suggest words while entering text e.g. in a mobile device.
+- The soure code for the presentation is available at [https://github.com/ThomasMey123/DataScienceCapStone](https://github.com/ThomasMey123/DataScienceCapStone)
+
+Swiftkey data basic summary
+========================================================
+
+- Basic summary with line, word and character counts
+- Figures calculated after cleansing
+
+
+
+```{r echo=FALSE}
+# Download the file to folder 'data' using R and supply smaller versions
+if(!file.exists("data")) {
+     dir.create("data")
+}
+
+fileurl<-"https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
+dateDownloaded<-as.POSIXlt(Sys.time()) # the current time in UTC
+
+
+if(!file.exists(".\\data\\Coursera-SwiftKey.zip")) {
+    download.file(fileurl,destfile = ".\\data\\Coursera-SwiftKey.zip", method="auto", mode="wb")
+}else {
+    fileinfo<-file.info(".\\data\\Coursera-SwiftKey.zip")
+    dateDownloaded<-fileinfo$mtime
+}
+
+if(!file.exists(".\\data\\final")) {
+    unzip(zipfile=".\\data\\Coursera-SwiftKey.zip", exdir=".\\data")
+}
+
+makeSmall<-function(name,percentage){
+    n1<-paste0(".\\data\\final\\en_US\\",name)
+    n2<-paste0(".\\data\\small\\en_US\\",name)
+    con1<-file(n1,"r")
+    t1<-readLines(con1)
+    close(con1)
+    l1<-length(t1)
+    t2<-sample(t1,l1/100*percentage)
+    con2<-file(n2,"w")
+    writeLines(t2,con2)
+    close(con2)
+}
+
+set.seed(123)
+
+if(!file.exists(".\\data\\small")) {
+     dir.create(".\\data\\small")
+     dir.create(".\\data\\small\\en_US")
+}
+if(!file.exists(".\\data\\small\\en_US\\en_US.twitter.txt")) {
+    makeSmall("en_US.twitter.txt",1)
+    makeSmall("en_US.blogs.txt",1)
+    makeSmall("en_US.news.txt",1)
+}
+
+```
+
+
+```{r echo=FALSE}
+msg<-Sys.setlocale("LC_ALL","English")
+
+con <- file(".\\data\\profanity_en.txt", "r") 
+p<-readLines(con) 
+close(con)
+```
+
+```{r echo=FALSE}
+#Preprocessing functions
+preprocess<-function(docs){
+removeURL<-function(x) gsub("http[^[:space:]]*","",x)
+docs <- tm_map(docs, content_transformer(removeURL))   
+#remove anything but english letters or space
+removeNumPunct<-function(x) gsub("[^[:alpha:][:space:]]*","",x)
+docs <- tm_map(docs, content_transformer(removeNumPunct))   
+#remove profanity and whitespace
+docs <- tm_map(docs, removeWords, p)
+docs <- tm_map(docs, stripWhitespace)   
+docs
+}
+```
+
+
+```{r echo=FALSE}
+processing<-"final"
+#processing<-"small"
+#processing<-"test"
+
+directory<-paste0(".\\data\\", processing, "\\en_US")
+
+library(tm)   
+docs <- Corpus(DirSource(directory))
+
+#Define functions for counting lines, character and words
+lineCount<-function(x) {length(x$content)}
+charCount<-function(x) {sum(nchar(x$content))}
+wordCount<-function(x) {
+    sum(sapply(gregexpr("[[:alpha:]]+", x$content), function(x) sum(x > 0)))
+}
+performCount<-function(d,f) {sapply(1:length(d),function(x){f(d[[x]])})}
+
+#preprocess
+docs<-preprocess(docs)
+
+#get line, character and wordcounts
+l2<-performCount(docs,lineCount)
+c2<-performCount(docs,charCount)
+w2<-performCount(docs,wordCount)
+
+
+#Print table with line, character and word counts after cleansing
+rnames<-NULL
+for(i in 1:3){ rnames<-c(rnames,docs[[i]]$meta$id)}
+d<-data.frame(l2,w2,c2)
+rownames(d)<-rnames
+colnames(d)<-c("#Lines","#Words","#Characters")
+suppressWarnings( require(htmlTable))
+htmlTable(d)
+```
+
+
+Swiftkey most frequent terms
+========================================================
+This table shows the 10 most frequent terms in the three corpora sorted by frequency.
+```{r echo=FALSE}
+if(processing == "final") {
+    processing<-"small"
+    directory<-paste0(".\\data\\", processing, "\\en_US")
+    docs <- Corpus(DirSource(directory))
+    docs <- preprocess(docs)
+}
+
+
+dtm <- DocumentTermMatrix(docs)   
+#rowSums(as.matrix(dtm))
+
+#could use the below findFreqTerms, but the code below gives more detailed output
+#findFreqTerms(dtm,lowfreq = 2000)
+
+
+#The most frequent terms
+freq <- colSums(as.matrix(dtm  )) 
+allwords<-sum(freq)
+ord <- order(freq,decreasing = TRUE)
+orderedFreqs<-data.frame(freq[ord])
+colnames(orderedFreqs)<-c("Occurances")
+orderedFreqs$percentage<-orderedFreqs$Occurances/allwords*100
+#head(orderedFreqs,n=50)
+htmlTable(head(orderedFreqs,n=10))
+
+```
+
+
+
+Swiftkey data histograms
+========================================================
+<small>
+The following two histograms show the distribution of frequency of terms, on the left with linear scale, on the right with exponantial scale for both axes. The exponential scale shows well that few terms appear very often whereas very many terms appear very seldom.</small>
+
+```{r echo=FALSE}
+par(mfrow=c(1,2))
+#A histogram with the distribution of terms
+#hist(freq, breaks = 5000)
+#with logarithmic scale
+r <- hist(freq, breaks = 5000)
+plot(r$breaks[-1], r$counts, log='xy', type='h', xlab="freq (log)", ylab="Frequency(log)")
+
+```
+
+
+Findings
+========================================================
+
+- Data cleansing is not easy, especially for data from twitter. I considered the method to just keep words to be the best, which was available in a tutorial on text mining in R, see [Twitter Data Analysis with R](http://www.rdatamining.com/docs/twitter-analysis-with-r).
+
+- Calculating a Term Document Matrix for the whole corpus is computational very intensive. It was not achievable on a Laptop with 8GB Ram and an i7 Quadcore Processor within 24 hours. Therefore a sample subset has been used to analyze word frquencies.
+
+- Usually lower case is used in text mining for ease of processing. Both lower and upper case are used here on the texts in order to be able to also predict words or ngrams in upper case.
+
+
+Outlook
+========================================================
+
+Further steps in the project:
+- Determine how much data from the Corpus is needed to build a valid model for recommendation. Even though more data might be beneficial for the prediction quality the amount of data for analysis needs to be limited for computational reasons.
+- It is assumed that the intermediate data for the recommendation model will be saved as csv files, one for each length on ngrams (1..3).
+- Analyze how many records per file are needed for each ngram.
+- Check if an adaptive model is feasible/needed (i.e. the model is modified according to user input).
