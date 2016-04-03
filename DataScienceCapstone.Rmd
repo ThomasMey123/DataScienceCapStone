@@ -1,0 +1,331 @@
+---
+title: "DataScienceCapstone"
+author: "Thomas Mey"
+date: "17.3.2016"
+output: html_document
+---
+
+
+
+Set processing.size
+```{r}
+#processing.size<-"final"
+processing.size<-"small"
+#processing.size<-"test"
+
+#processing.mode<-"clean"
+processing.mode<-"noisy"
+
+
+```
+
+## Download the file to folder 'data' using R and supply smaller versions
+```{r echo=FALSE}
+if(!file.exists("data")) {
+     dir.create("data")
+}
+
+fileurl<-"https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
+dateDownloaded<-as.POSIXlt(Sys.time()) # the current time in UTC
+
+
+if(!file.exists(".\\data\\Coursera-SwiftKey.zip")) {
+    download.file(fileurl,destfile = ".\\data\\Coursera-SwiftKey.zip", method="auto", mode="wb")
+}else {
+    fileinfo<-file.info(".\\data\\Coursera-SwiftKey.zip")
+    dateDownloaded<-fileinfo$mtime
+}
+
+if(!file.exists(".\\data\\final")) {
+    unzip(zipfile=".\\data\\Coursera-SwiftKey.zip", exdir=".\\data")
+}
+
+makeSmall<-function(name,percentage){
+    n1<-paste0(".\\data\\final\\en_US\\",name)
+    n2<-paste0(".\\data\\small\\en_US\\",name)
+    con1<-file(n1,"rb" )
+    t1<-readLines(con1,encoding = "UTF8")
+    close(con1)
+    l1<-length(t1)
+    t2<-sample(t1,l1/100*percentage)
+    con2<-file(n2,"w")
+    writeLines(t2,con2)
+    close(con2)
+}
+
+set.seed(123)
+
+if(!file.exists(".\\data\\small")) {
+     dir.create(".\\data\\small")
+     dir.create(".\\data\\small\\en_US")
+}
+if(!file.exists(".\\data\\small\\en_US\\en_US.twitter.txt")) {
+    makeSmall("en_US.twitter.txt",1)
+    makeSmall("en_US.blogs.txt",1)
+    makeSmall("en_US.news.txt",1)
+  }
+
+```
+
+## read profanity
+```{r }
+fileurl<-"https://raw.githubusercontent.com/shutterstock/List-of-Dirty-Naughty-Obscene-and-Otherwise-Bad-Words/master/en"
+
+if(!file.exists(".\\data\\profanity_en.txt")) {
+   download.file(fileurl,destfile = ".\\data\\profanity_en.txt", method="auto", mode="w")
+}
+
+con <- file(".\\data\\profanity_en.txt", "r") 
+p<-readLines(con) 
+close(con)
+``` 
+
+
+
+## print summary statistics
+```{r}
+directory<-paste0(".\\data\\", processing.size, "\\en_US")
+nGramDirectory<-paste0(".\\data\\", processing.size, "\\NGrams")
+if(!file.exists(nGramDirectory)) {
+     dir.create(nGramDirectory)
+}
+
+
+library(tm)   
+docs <- Corpus(DirSource(directory))
+
+#Define functions for counting lines, character and words
+lineCount<-function(x) {length(x$content)}
+charCount<-function(x) {sum(nchar(x$content))}
+wordCount<-function(x) {
+    sum(sapply(gregexpr("([[:alpha:]](\'[:alpha:]+)?)*", x$content), function(x) sum(x > 0)))
+}
+performCount<-function(d,f) {sapply(1:length(d),function(x){f(d[[x]])})}
+
+#get line, character and wordcounts
+l2<-performCount(docs,lineCount)
+c2<-performCount(docs,charCount)
+w2<-performCount(docs,wordCount)
+
+
+#Print table with line, character and word counts after cleansing
+rnames<-NULL
+for(i in 1:3){ rnames<-c(rnames,docs[[i]]$meta$id)}
+d<-data.frame(l2,w2,c2)
+rownames(d)<-rnames
+colnames(d)<-c("#Lines","#Words","#Characters")
+suppressWarnings( require(htmlTable))
+htmlTable(d)
+```
+
+
+#preprocess and build dtm
+```{r}
+preprocess<-function(docs,p) {
+msg<-Sys.setlocale("LC_ALL","English")
+#preprocess
+removeURL<-function(x) gsub("http[^[:space:]]*","",x)
+docs <- tm_map(docs, content_transformer(removeURL))   
+#remove anything but english letters or space
+removeNumPunct<-function(x) gsub("[^[:alpha:][:space:]]*","",x)
+docs <- tm_map(docs, content_transformer(removeNumPunct))   
+#remove profanity and whitespace
+docs <- tm_map(docs, removeWords, p)
+if(processing.mode=="clean"){
+docs <- tm_map(docs, content_transformer(tolower))
+docs <- tm_map(docs, removeWords, c(stopwords('english')))
+}
+docs <- tm_map(docs, stripWhitespace) 
+docs
+}
+
+docs<-preprocess(docs,p)
+
+```
+
+
+## Swiftkey most frequent terms and  Swiftkey data histograms
+The table shows the 10 most frequent terms in the three corpora sorted by frequency.
+<small>
+The following two histograms show the distribution of frequency of terms, on the left with linear scale, on the right with exponantial scale for both axes. The exponential scale shows well that few terms appear very often whereas very many terms appear very seldom.</small>
+```{r eval=FALSE  }
+# if(processing.size == "final") {
+#     processing.size<-"small"
+#     directory<-paste0(".\\data\\", processing.size, "\\en_US")
+#     docs <- Corpus(DirSource(directory))
+#     docs <- preprocess(docs)
+# }
+# 
+# 
+# dtm <- DocumentTermMatrix(docs, control = list(wordLengths = c(1,Inf)))   
+# #rowSums(as.matrix(dtm))
+# 
+# #could use the below findFreqTerms, but the code below gives more detailed output
+# #findFreqTerms(dtm,lowfreq = 2000)
+# 
+# 
+# #The most frequent terms
+# freq <- colSums(as.matrix(dtm  )) 
+# allwords<-sum(freq)
+# ord <- order(freq,decreasing = TRUE)
+# orderedFreqs<-data.frame(freq[ord])
+# colnames(orderedFreqs)<-c("Occurances")
+# orderedFreqs$percentage<-orderedFreqs$Occurances/allwords*100
+# #head(orderedFreqs,n=50)
+# htmlTable(head(orderedFreqs,n=30))
+# 
+# 
+# 
+# par(mfrow=c(1,2))
+# #A histogram with the distribution of terms
+# #hist(freq, breaks = 5000)
+# #with logarithmic scale
+# r <- hist(freq, breaks = 5000)
+# plot(r$breaks[-1], r$counts, log='xy', type='h', xlab="freq (log)", ylab="Frequency(log)")
+
+```
+
+
+
+```{r}
+corpus_df <- data.frame(text=lapply(docs[1], '[',"content"), stringsAsFactors=F)
+corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[2], '[',"content"), stringsAsFactors=F))
+corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[3], '[',"content"), stringsAsFactors=F))
+
+
+require(RWeka)
+
+nGramTable <- function(n, corpusDataFrame) {
+  nGramTokens <-  NGramTokenizer(corpusDataFrame, Weka_control(min = n, max = n))
+  
+  nGramTable <- data.frame(table(nGramTokens))
+  colnames(nGramTable) <- c("word", "freq")
+  
+  nGramTable <-  nGramTable[order(nGramTable$freq,decreasing=TRUE),]
+ 
+  nGramTable
+}
+
+
+
+```
+
+
+```{r label="NGram1"}
+n1GramTable <- nGramTable(1, corpus_df)
+if( processing.mode=="noisy"){
+    n1GramTable<-n1GramTable[n1GramTable$freq>1,]
+ }
+nrow(n1GramTable)
+head(n1GramTable)
+write.csv(n1GramTable,file= paste0(nGramDirectory,"\\N1Grams.csv"))
+
+```
+
+
+```{r label="NGram2"}
+n2GramTable <- nGramTable(2, corpus_df)
+if( processing.mode=="noisy"){
+    n2GramTable<-n2GramTable[n2GramTable$freq>1,]
+}
+nrow(n2GramTable)
+head(n2GramTable)
+write.csv(n2GramTable,file= paste0(nGramDirectory,"\\N2Grams.csv"))
+
+```
+
+
+```{r label="NGram3"}
+n3GramTable <- nGramTable(3, corpus_df)
+if( processing.mode=="noisy"){
+    n3GramTable<-n3GramTable[n3GramTable$freq>1,]
+}
+nrow(n3GramTable)
+head(n3GramTable)
+write.csv(n3GramTable,file= paste0(nGramDirectory,"\\N3Grams.csv"))
+
+```
+
+```{r label="NGram4"}
+
+n4GramTable <- nGramTable(4, corpus_df)
+if( processing.mode=="noisy"){
+    n4GramTable<-n4GramTable[n4GramTable$freq>1,]
+}
+nrow(n4GramTable)
+head(n4GramTable)
+write.csv(n4GramTable,file= paste0(nGramDirectory,"\\N4Grams.csv"))
+
+```
+
+
+
+
+
+
+## Algorithm
+```{r}
+
+
+n1GramTable<-read.csv(paste0(nGramDirectory,"\\N1Grams_",processing.mode, ".csv"))
+n2GramTable<-read.csv(paste0(nGramDirectory,"\\N2Grams_",processing.mode, ".csv"))
+n3GramTable<-read.csv(paste0(nGramDirectory,"\\N3Grams_",processing.mode, ".csv"))
+
+
+n1GramTable<-n1GramTable[n1GramTable$freq>1,]
+n2GramTable<-n2GramTable[n2GramTable$freq>1,]
+n3GramTable<-n3GramTable[n3GramTable$freq>1,]
+
+head(n1GramTable)
+head(n2GramTable)
+head(n3GramTable)
+
+#get up the last three words
+getTail <-function(x,nWords=3){
+    matches<-gregexpr("[[:alpha:](\'[:alpha:])?]+",x)
+    tail(matches[[1]],n=nWords)
+    m3<-tail(matches[[1]],n=nWords)
+    res<-substr(x,m3[1],nchar(x))
+    trimws(res)
+}
+
+makeNGramMatchRegex<-function(x){
+    paste0("^",x," ")
+}
+
+
+predictWord <-function(test,n) {
+    print(paste0("Predicting for \'",test,"\'"))
+    testNGram<-getTail(test)
+    
+    testNGram<-makeNGramMatchRegex(testNGram)
+    
+
+    testNGram2<-getTail(testNGram,2)
+    testNGram2<-makeNGramMatchRegex(testNGram2)
+    f<-grep(testNGram2,n3GramTable$word)
+    r<-NULL
+    
+    if(length(f)>0){
+        r<-n3GramTable[f[1:3],]
+    } else {
+        testNGram1<-getTail(testNGram,1)
+        testNGram1<-makeNGramMatchRegex(testNGram1)
+        f<-grep(testNGram1,n2GramTable$word)
+    
+        if(length(f)>0){
+            r<-n2GramTable[f[1:3],]
+        } else{
+            r<-n1GramTable[1:3,]
+        }
+    }
+    r
+}
+
+predictWord("I was going to the",3)
+predictWord("Did anyone see Adam Sandler's",3)
+predictWord("Don't let me be",3)
+
+
+```
+
