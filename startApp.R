@@ -1,3 +1,3 @@
-setwd("~/Thomas/coursera/10-DataScienceCapstone")
+setwd("~/git-repos/DataScienceCapStone")
 library(shiny)
 runApp("WordPredictionApp")

@@ -4,9 +4,9 @@ print(getwd())
 #setwd("C:/Dev/Repos/10-DataScienceCapStone/WordPredictionApp")
 #setwd("C:\\Dev\\Repos\\10-DataScienceCapStone\\WordPredictionApp")
 
-n1GramTable<-read.csv("./data/N1Grams.csv",colClasses = c("character","character","integer"))
-n2GramTable<-read.csv("./data/N2Grams.csv",colClasses = c("character","character","integer"))
-n3GramTable<-read.csv("./data/N3Grams.csv",colClasses = c("character","character","integer"))
+n1GramTable<-read.csv("./data/N1Grams.csv",colClasses = c("character","integer"))
+n2GramTable<-read.csv("./data/N2Grams.csv",colClasses = c("character","integer"))
+n3GramTable<-read.csv("./data/N3Grams.csv",colClasses = c("character","integer"))
 
 
 n1GramTable<-n1GramTable[n1GramTable$freq>1,]
@@ -56,14 +56,15 @@ predictWord <-function(test,n) {
             r<-n1GramTable[1:3,]
         }
     }
-    r
+    lapply(r, function(y) getTail(y,1))
 }
+
+isBlank<-function(y) substr(y,nchar(y),nchar(y)) == " "
+appendBlank<- function(x) ifelse(isBlank(x), ""," ")
 
 
 shinyServer(
-    function(input,output){
-        #output$output <- renderText({paste0(input$text, input$select)})
-        
+    function(input,output,clientData,session){
         res <- reactive({
             r<-predictWord(input$text,5)
             return(r$word)
@@ -78,6 +79,11 @@ shinyServer(
                 selectInput('recs', 'Recommendations',choices=c(Choose='', res()), selectize=FALSE)
         })
         
-        output$output <- renderText({paste0(input$text, input$recs)})
+
+        observe({ 
+            updateTextInput(session, "text", value = paste0(input$text, appendBlank(input$text) ,input$recs))
+        })
+            
+        output$output <- renderText({paste0(input$text, appendBlank(input$text), input$recs)})
     }
 )
