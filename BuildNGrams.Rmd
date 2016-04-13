@@ -10,6 +10,8 @@ output: html_document
 
 ## setup environment
 ```{r}
+processing.size<-"small"
+
 directory<-paste0(".\\data\\", processing.size, "\\en_US")
 nGramDirectory<-paste0(".\\data\\", processing.size, "\\NGrams")
 if(!file.exists(nGramDirectory)) {
@@ -56,42 +58,9 @@ docsSummary<-function(docs) {
 
 #preprocess and build dtm
 ```{r}
-preprocess<-function(docs,p) {
-  msg<-Sys.setlocale("LC_ALL","English")
-  
-  #Remove URLS
-  removeURL<-function(x) gsub("http[^[:space:]]*","",x)
-  docs <- tm_map(docs, content_transformer(removeURL))   
-  
-  # Handle right single quotes
-  # http://stackoverflow.com/questions/2477452/%C3%A2%E2%82%AC%E2%84%A2-showing-on-page-instead-of
-  
-  #replaceQuotes<-function(x) gsub("(\ue2\u80\u99\ub4\u92)", "'", x)
-  replaceQuotes<-function(x) gsub("(\u92\ub4)", "'", x,perl=TRUE)
-  
-  docs <- tm_map(docs, content_transformer(replaceQuotes))
-  #replaceQuotes2<-function(x) gsub("(\u02BC\u02C8\u0301\u05F3\u2032\uA78C\u02B9)", "'", x, perl = TRUE)
-  #docs <- tm_map(docs, content_transformer(replaceQuotes2))
-  
-  #remove anything but english letters or space
-  removeNumPunct<-function(x) gsub("[^A-Za-z']"," ",x)
-  docs <- tm_map(docs, content_transformer(removeNumPunct))   
+options(mc.cores=1)
 
-  #tolower
-  docs <- tm_map(docs, content_transformer(tolower))
-
-  #remove any character sequence where a character is repeated more than 4 times  
-  removeRepeatedChars<-function(x) gsub("(.)\\1{3,}","",x)
-  docs <- tm_map(docs, content_transformer(removeRepeatedChars))   
-
-  #remove profanity 
-  docs <- tm_map(docs, removeWords, p)
-  
-
-  #strip whitespace
-  docs <- tm_map(docs, stripWhitespace) 
-  docs
-}
+source("Common.r")
 
 library(tm)   
 docs <- Corpus(DirSource(directory))

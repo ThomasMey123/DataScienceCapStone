@@ -1,0 +1,62 @@
+---
+title: "TestPredictionQuality"
+author: "Thomas Mey"
+date: "13. April 2016"
+output: html_document
+---
+
+
+## setup environment
+```{r}
+
+directory<-paste0(".\\data\\test\\en_US")
+nGramDirectory<-paste0(".\\data\\small\\NGrams")
+if(!file.exists(nGramDirectory)) {
+     dir.create(nGramDirectory)
+}
+```
+
+## read profanity
+```{r }
+con <- file(".\\data\\profanity_en.txt", "r") 
+p<-readLines(con) 
+close(con)
+``` 
+
+
+
+```{r}
+options(mc.cores=1)
+
+source("Common.r")
+
+n1GramTable<-read.csv(paste0(nGramDirectory,"\\N1Grams.csv"))
+n2GramTable<-read.csv(paste0(nGramDirectory,"\\N2Grams.csv"))
+n3GramTable<-read.csv(paste0(nGramDirectory,"\\N3Grams.csv"))
+
+library(tm)   
+docs <- Corpus(DirSource(directory))
+docs<-preprocess(docs,p)
+
+docs[[3]]$content[500]
+length(docs[[1]]$content)
+length(docs[[2]]$content)
+length(docs[[3]]$content)
+
+corpus_df <- data.frame(text=lapply(docs[1], '[',"content"), stringsAsFactors=F)
+corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[2], '[',"content"), stringsAsFactors=F))
+corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[3], '[',"content"), stringsAsFactors=F))
+
+corpus_df<-corpus_df$content
+corpus_df[19]
+
+n<-sample(length(corpus_df),10)
+
+testset<-corpus_df[n]
+
+
+
+
+```
+
+
