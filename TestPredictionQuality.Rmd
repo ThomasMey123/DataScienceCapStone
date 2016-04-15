@@ -34,6 +34,7 @@ n1GramTable<-read.csv(paste0(nGramDirectory,"\\N1Grams.csv"))
 n2GramTable<-read.csv(paste0(nGramDirectory,"\\N2Grams.csv"))
 n3GramTable<-read.csv(paste0(nGramDirectory,"\\N3Grams.csv"))
 
+#build and cleanse test corpus
 library(tm)   
 docs <- Corpus(DirSource(directory))
 docs<-preprocess(docs,p)
@@ -50,12 +51,44 @@ corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[3], '[',"content"), str
 corpus_df<-corpus_df$content
 corpus_df[19]
 
-n<-sample(length(corpus_df),10)
+#build sample stings
+numberOfStingsToSample<-10
 
+n<-sample(length(corpus_df),numberOfStingsToSample)
 testset<-corpus_df[n]
 
+#build test string and match
+tt<-{}
+for(i in 1:numberOfStingsToSample) {
+  t<-testset[i]
+  s<-gregexpr(" ",t)
+  t1<-t(data.frame(lapply(s[[1]], function(x) {
+    x<-substr(t,0,x-1)
+    g <- regexpr("\\ [^\\ ]*$", x)
+    c(substring(x,0,g-1),trimws(substring(x,g)))
+  })))
+  
+  colnames(t1)<-c("test","match")
+  rownames(t1)<-NULL
+  tt<-rbind(tt,t1)
+}
+
+head(tt)
+
+#test...
+
+r<-NULL
+for(i in 1:dim(tt)[1]) {
+  res<-predictWord(as.character(tt[i,1]),5)$word
+  print(paste("Match:", tt[i,2]))
+  print(res)
+  r1<-tt[i,2]  %in% res
+  print(r1)
+  r<-c(r,r1)
+}
 
 
+table(r==TRUE)
 
 ```
 

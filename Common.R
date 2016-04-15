@@ -38,7 +38,6 @@ preprocess<-function(docs,p) {
 #get up the last three words
 getTail <-function(x,nWords=3){
     matches<-gregexpr("[[:alpha:](\'[:alpha:])?]+",x)
-    tail(matches[[1]],n=nWords)
     m3<-tail(matches[[1]],n=nWords)
     res<-substr(x,m3[1],nchar(x))
     trimws(res)
@@ -62,19 +61,19 @@ predictWord <-function(test,n) {
     r<-NULL
     
     if(length(f)>0){
-        r<-n3GramTable[f[1:3],]
+        r<-n3GramTable[f[1:n],]
     } else {
         testNGram1<-getTail(testNGram,1)
         testNGram1<-makeNGramMatchRegex(testNGram1)
         f<-grep(testNGram1,n2GramTable$word)
         
         if(length(f)>0){
-            r<-n2GramTable[f[1:3],]
+            r<-n2GramTable[f[1:n],]
         } else{
-            r<-n1GramTable[1:3,]
+            r<-n1GramTable[1:n,]
         }
     }
-    lapply(r, function(y) getTail(y,1))
+    lapply(r, function(y) getTail(as.character(y),1))
 }
 
 isBlank<-function(y) substr(y,nchar(y),nchar(y)) == " "
