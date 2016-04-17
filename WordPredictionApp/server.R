@@ -17,24 +17,16 @@ Sys.sleep(1)
 shinyServer(
     function(input,output,clientData,session){
         res <- reactive({
-            r<-predictWord(n1GramTable,n2GramTable,n3GramTable,input$text,5)
+            r<-predictWord(n1GramTable,n2GramTable,n3GramTable,tolower(input$text),5)
             return(r)
         })
 
-        output$dynInput = renderUI({
-            textInput("text", label = "Enter some text")
-        })
-        
-                
-        output$recommendations = renderUI({
-                selectInput('recs', 'Recommendations',choices=c(Choose='', res()), selectize=FALSE)
-        })
-        
-
-        observe({ 
+        observeEvent(input$recs,{
             updateTextInput(session, "text", value = paste0(input$text, appendBlank(input$text) ,input$recs))
         })
-            
-        output$output <- renderText({paste0(input$text, appendBlank(input$text), input$recs)})
+        
+        observeEvent(input$text, {
+            updateSelectInput(session, "recs", choices=c(Choose='', res()))
+        })
     }
 )

@@ -130,12 +130,10 @@ rm(corpus_df,ng1,ng2,ng3)
 
 ```{r}
 ngt1<-setorder(ngt1, -freq )
-ngt1<-ngt1[ngt1$freq>1,]
-write.csv(ngt1,file= paste0(nGramDirectory,"\\N1Grams.csv"),row.names = FALSE)
+write.csv(ngt1[ngt1$freq>1,],file= paste0(nGramDirectory,"\\N1Grams.csv"),row.names = FALSE)
 
 
 # prepare ng2 for witing
-ngt2<-ngt2[ngt2$freq>1,]
 ngt2<-cbind(ngt2,data.frame(tstrsplit(ngt2[,1],split = " ")))
 colnames(ngt2)<-c("word","freq","t1","t2")
 #ngt2$t1<-as.character(ngt2$t1)
@@ -147,11 +145,10 @@ tail(ngt2)
 filter(ngt2, t1 == "affected")
 head(ngt2)
 tail(ngt2)
-write.csv(ngt2,file= paste0(nGramDirectory,"\\N2Grams.csv"),row.names = FALSE)
+write.csv(ngt2[ngt2$freq>1,],file= paste0(nGramDirectory,"\\N2Grams.csv"),row.names = FALSE)
 
 
 # prepare ng3 for witing
-ngt3<-ngt3[ngt3$freq>1,]
 ngt3<-cbind(ngt3,data.frame(tstrsplit(ngt3[,1],split = " ")))
 colnames(ngt3)<-c("word","freq","t1","t2","t3")
 ngt3_kn<-ngt3
@@ -163,7 +160,7 @@ ngt3 <-  setorder(ngt3, t1, -freq )
 filter(ngt3, t1 == "affected by")
 head(ngt3)
 tail(ngt3)
-write.csv(ngt3,file= paste0(nGramDirectory,"\\N3Grams.csv"),row.names = FALSE)
+write.csv(ngt3[ngt3$freq>1,],file= paste0(nGramDirectory,"\\N3Grams.csv"),row.names = FALSE)
 ```
 
 
@@ -184,11 +181,13 @@ write.csv(c1,file= paste0(nGramDirectory,"\\N1GramsKN.csv"),row.names = FALSE)
 ngt3<-ngt3_kn
 rm(ngt3_kn)
 
-ngt3$t1
 ngt3$t2<-paste(as.character(ngt3$t2),as.character(ngt3$t3))
 colnames(ngt3)<-c("word","freq","t1","t2")
 ngt3<-select(ngt3, t1,t2,freq)
 ngt3 <-  setorder(ngt3, t2, -freq )
+
+head(ngt3[10000:11000,],50)
+tail(ngt3)
 
 c2<-data.frame(table(ngt3$t2))
 colnames(c2)<-c("word","freq")
@@ -205,5 +204,15 @@ c2<-select(c2, t1,t2, freq)
 head(c2)
 tail(c2)
 write.csv(c2,file= paste0(nGramDirectory,"\\N2GramsKN.csv"),row.names = FALSE)
+
+ff2<-data.frame(table(c2$t1))
+ff2<-setorder(ff2, -Freq )
+head(ff2)
+```
+
+
+```{r}
+#ngt2[ngt2[,1]=="after",][1:10,]
+
 ```
 
