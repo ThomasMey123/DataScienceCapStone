@@ -1,5 +1,5 @@
-library(data.table)
-library(dplyr)
+require(data.table)
+require(dplyr)
 
 debug.print<-FALSE
 
@@ -59,7 +59,7 @@ predictWord <-function(test,n) {
         print(paste0("Predicting for \'",test,"\'"))
     }
     testNGram<-getTail(test)
-    
+        
     testNGram2<-getTail(testNGram,2)
     f<-filter(n3GramTable, t1 == testNGram2)
     

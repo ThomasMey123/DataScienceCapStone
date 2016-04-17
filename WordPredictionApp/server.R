@@ -1,17 +1,18 @@
 library(shiny)
+require(data.table)
+require(dplyr)
 
-source("Common.R")
 
 n1GramTable<-read.csv("Data/N1GramsKN.csv",colClasses = c("character","integer"))
 n2GramTable<-read.csv("Data/N2GramsKN.csv",colClasses = c("character","character","integer"))
 n3GramTable<-read.csv("Data/N3Grams.csv",colClasses = c("character","character","integer"))
 
-
 head(n1GramTable)
 head(n2GramTable)
 head(n3GramTable)
 
-
+source("Common.R")
+Sys.sleep(1)
 
 shinyServer(
     function(input,output,clientData,session){
