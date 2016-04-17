@@ -1,3 +1,8 @@
+library(data.table)
+library(dplyr)
+
+debug.print<-FALSE
+
 preprocess<-function(docs,p) {
     msg<-Sys.setlocale("LC_ALL","English")
     
@@ -37,6 +42,7 @@ preprocess<-function(docs,p) {
 
 #get up the last three words
 getTail <-function(x,nWords=3){
+    if(is.null(x)) x<-""
     matches<-gregexpr("[[:alpha:](\'[:alpha:])?]+",x)
     m3<-tail(matches[[1]],n=nWords)
     res<-substr(x,m3[1],nchar(x))
@@ -74,7 +80,7 @@ predictWord <-function(test,n) {
     
     if(length(r)<n) 
     {
-        r2<-data.frame(n1GramTable[1:(n-length(r)),1])
+        r2<-n1GramTable[1:(n-length(r)),1]
         r<-c(r,r2)
     }
     r
