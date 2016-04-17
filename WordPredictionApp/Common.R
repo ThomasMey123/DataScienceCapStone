@@ -49,31 +49,35 @@ makeNGramMatchRegex<-function(x){
 
 
 predictWord <-function(test,n) {
-    print(paste0("Predicting for \'",test,"\'"))
+    if(debug.print){
+        print(paste0("Predicting for \'",test,"\'"))
+    }
     testNGram<-getTail(test)
     
-    testNGram<-makeNGramMatchRegex(testNGram)
-    
-    
     testNGram2<-getTail(testNGram,2)
-    testNGram2<-makeNGramMatchRegex(testNGram2)
-    f<-grep(testNGram2,n3GramTable$word)
-    r<-NULL
+    f<-filter(n3GramTable, t1 == testNGram2)
     
-    if(length(f)>0){
-        r<-n3GramTable[f[1:n],]
-    } else {
+    r<-NULL
+    if(nrow(f)>0){
+        r<-f[1:(min(nrow(f),n)),2]
+    } 
+    
+    if(length(r)<n) 
+    {
         testNGram1<-getTail(testNGram,1)
-        testNGram1<-makeNGramMatchRegex(testNGram1)
-        f<-grep(testNGram1,n2GramTable$word)
+        f<-filter(n2GramTable, t1 == testNGram1)
         
-        if(length(f)>0){
-            r<-n2GramTable[f[1:n],]
-        } else{
-            r<-n1GramTable[1:n,]
-        }
+        if(nrow(f)>0){
+            r<-c(r,f[1:min(nrow(f),n-length(r)),2])
+        } 
     }
-    lapply(r, function(y) getTail(as.character(y),1))
+    
+    if(length(r)<n) 
+    {
+        r2<-data.frame(n1GramTable[1:(n-length(r)),1])
+        r<-c(r,r2)
+    }
+    r
 }
 
 isBlank<-function(y) substr(y,nchar(y),nchar(y)) == " "

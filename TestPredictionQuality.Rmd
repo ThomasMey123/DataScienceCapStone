@@ -8,6 +8,11 @@ output: html_document
 
 ## setup environment
 ```{r}
+library(data.table)
+library(dplyr)
+
+debug.print<-FALSE
+#setwd("C:/Users/NeutaUndTom/Documents/git-repos/DataScienceCapStone")
 
 directory<-paste0(".\\data\\test\\en_US")
 nGramDirectory<-paste0(".\\data\\small\\NGrams")
@@ -28,11 +33,11 @@ close(con)
 ```{r}
 options(mc.cores=1)
 
-source("Common.r")
+source("WordPredictionApp/Common.r")
 
-n1GramTable<-read.csv(paste0(nGramDirectory,"\\N1Grams.csv"))
-n2GramTable<-read.csv(paste0(nGramDirectory,"\\N2Grams.csv"))
-n3GramTable<-read.csv(paste0(nGramDirectory,"\\N3Grams.csv"))
+n1GramTable<-read.csv(paste0(nGramDirectory,"\\N1GramsKN.csv"),colClasses = c("character","integer"))
+n2GramTable<-read.csv(paste0(nGramDirectory,"\\N2GramsKN.csv"),colClasses = c("character","character","integer"))
+n3GramTable<-read.csv(paste0(nGramDirectory,"\\N3Grams.csv"),colClasses = c("character","character","integer"))
 
 #build and cleanse test corpus
 library(tm)   
@@ -50,19 +55,27 @@ corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[3], '[',"content"), str
 
 corpus_df<-corpus_df$content
 corpus_df[19]
+length(corpus_df)
 
 #build sample stings
-numberOfStingsToSample<-10
+numberOfStingsToSample<-500
+set.seed(1234)
 
 n<-sample(length(corpus_df),numberOfStingsToSample)
 testset<-corpus_df[n]
 
+
+```
+
+```{r}
 #build test string and match
 tt<-{}
 for(i in 1:numberOfStingsToSample) {
   t<-testset[i]
   s<-gregexpr(" ",t)
-  t1<-t(data.frame(lapply(s[[1]], function(x) {
+  v<-s[[1]]
+  w<-v[(min(3,length(v))) :length(v)]
+  t1<-t(data.frame(lapply(w, function(x) {
     x<-substr(t,0,x-1)
     g <- regexpr("\\ [^\\ ]*$", x)
     c(substring(x,0,g-1),trimws(substring(x,g)))
@@ -75,20 +88,37 @@ for(i in 1:numberOfStingsToSample) {
 
 head(tt)
 
+
+```
+
+```{r}
 #test...
 
+print(paste("Processing items:",dim(tt)[1]))
 r<-NULL
 for(i in 1:dim(tt)[1]) {
-  res<-predictWord(as.character(tt[i,1]),5)$word
-  print(paste("Match:", tt[i,2]))
-  print(res)
+  res<-predictWord(as.character(tt[i,1]),5)
   r1<-tt[i,2]  %in% res
-  print(r1)
+  if(debug.print){
+    print(paste("item:",i))
+    print(paste("Match:", tt[i,2]))
+    print(res)
+    print(r1)
+  }
   r<-c(r,r1)
 }
 
 
-table(r==TRUE)
+rt<-table(r==TRUE)
+
+pq<-rt[2]/length(r)*100
+print(paste("NGram table sizes (3,2,1):",nrow(n3GramTable),nrow(n2GramTable),nrow(n1GramTable)))
+print(paste("Number of test strings:",numberOfStingsToSample))
+print(paste("Number of samples:",length(r)))
+print("Matches:")
+rt
+print(paste("prediction quality:",pq,"%"))
+
 
 ```
 
