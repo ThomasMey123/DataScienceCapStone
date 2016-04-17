@@ -54,14 +54,14 @@ makeNGramMatchRegex<-function(x){
 }
 
 
-predictWord <-function(test,n) {
+predictWord <-function(ngt1,ngt2,ngt3,test,n) {
     if(debug.print){
         print(paste0("Predicting for \'",test,"\'"))
     }
     testNGram<-getTail(test)
         
     testNGram2<-getTail(testNGram,2)
-    f<-filter(n3GramTable, t1 == testNGram2)
+    f<-filter(ngt3, t1 == testNGram2)
     
     r<-NULL
     if(nrow(f)>0){
@@ -71,7 +71,7 @@ predictWord <-function(test,n) {
     if(length(r)<n) 
     {
         testNGram1<-getTail(testNGram,1)
-        f<-filter(n2GramTable, t1 == testNGram1)
+        f<-filter(ngt2, t1 == testNGram1)
         
         if(nrow(f)>0){
             r<-c(r,f[1:min(nrow(f),n-length(r)),2])
@@ -80,7 +80,7 @@ predictWord <-function(test,n) {
     
     if(length(r)<n) 
     {
-        r2<-n1GramTable[1:(n-length(r)),1]
+        r2<-ngt1[1:(n-length(r)),1]
         r<-c(r,r2)
     }
     r

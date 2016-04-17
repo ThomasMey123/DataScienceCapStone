@@ -97,7 +97,7 @@ head(tt)
 print(paste("Processing items:",dim(tt)[1]))
 r<-NULL
 for(i in 1:dim(tt)[1]) {
-  res<-predictWord(as.character(tt[i,1]),5)
+  res<-predictWord(n1GramTable,n2GramTable,n3GramTable ,as.character(tt[i,1]),5)
   r1<-tt[i,2]  %in% res
   if(debug.print){
     print(paste("item:",i))
