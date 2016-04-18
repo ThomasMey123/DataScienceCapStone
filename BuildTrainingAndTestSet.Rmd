@@ -11,7 +11,7 @@ output: html_document
 ```{r}
 print(paste("Directory: ",getwd()))
 processing.size<-"small"
-processing.percentage <- 0.5
+processing.percentage <- 25
 processing.percentageTest <- processing.percentage / 50
 
 
