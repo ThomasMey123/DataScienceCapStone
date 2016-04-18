@@ -69,6 +69,7 @@ testset<-corpus_df[n]
 
 ```{r}
 #build test string and match
+
 tt<-{}
 for(i in 1:numberOfStingsToSample) {
   t<-testset[i]
@@ -93,7 +94,7 @@ head(tt)
 
 ```{r}
 #test...
-
+ptm <- proc.time()
 print(paste("Processing items:",dim(tt)[1]))
 r<-NULL
 for(i in 1:dim(tt)[1]) {
@@ -107,6 +108,7 @@ for(i in 1:dim(tt)[1]) {
   }
   r<-c(r,r1)
 }
+tm<-proc.time() - ptm
 
 
 rt<-table(r==TRUE)
@@ -118,6 +120,10 @@ print(paste("Number of samples:",length(r)))
 print("Matches:")
 rt
 print(paste("prediction quality:",pq,"%"))
+print("Time consumed:")
+tm
+print("Time consumed per prediction(ms):")
+tm[3]/length(r)*1000
 
 
 ```
