@@ -36,8 +36,8 @@ options(mc.cores=1)
 source("WordPredictionApp/Common.r")
 
 n1GramTable<-read.csv(paste0(nGramDirectory,"\\N1GramsKN.csv"),colClasses = c("character","integer"))
-n2GramTable<-read.csv(paste0(nGramDirectory,"\\N2GramsKN.csv"),colClasses = c("character","character","integer"))
-n3GramTable<-read.csv(paste0(nGramDirectory,"\\N3Grams.csv"),colClasses = c("character","character","integer"))
+n2GramTable<-read.csv(paste0(nGramDirectory,"\\shrunk_N2GramsKN.csv"),colClasses = c("character","character","integer"))
+n3GramTable<-read.csv(paste0(nGramDirectory,"\\shrunk_N3Grams.csv"),colClasses = c("character","character","integer"))
 
 #build and cleanse test corpus
 library(tm)   

@@ -212,48 +212,20 @@ head(ff2)
 
 
 ```{r}
-# options(mc.cores=4)
-# #ngt2[ngt2[,1]=="after",][1:10,]
+# rm(ngt2,ngt3,ngt1,docs)
+# gc()
 # library(plyr)
-# ?ddply
-# dim(c2)
 # 
-# x<-c2
-# head(x)
-# x$xs<-0
-# ux<-as.character(unique(x$t1))
-# for(i in 1:length(ux)){
-#     s<-ux[i]
-#     s1<-x[x[,1]==s,1]
-#     x[x[,1]==s,]$xs<-seq_along(s1)
-# }
+# c2<-c2[100000:200000,]
+# c2$index<-seq_along(c2$t1)
+# x3<-ddply(c2, .(t1), mutate, xs = index -min(index) +1)
 # 
+# head(x3,n=100)
+# tail(x3,n=100)
 # 
-# head(x,n=100)
-# tail(x,n=100)
-# 
-# x1<-filter(x,xs<10)
+# x1<-filter(x3,xs<10)
 # dim(x1)
 # head(x1,n=100)
 # tail(x1,n=100)
-# 
-# 
-# # If you want to split a dataframe according to values of some variable, I'd suggest using daply() from the plyr package.
-# # library(plyr)
-# # x <- daply(df, .(splitting_variable), function(x)return(x))
-# # 
-# # Now, x is an array of dataframes. To access one of the dataframes, you can index it with the name of the level of the splitting variable.
-# # x$Level1
-# # #or
-# # x[["Level1"]]
-# # 
-# # I'd be sure that there aren't other more clever ways to deal with your data before splitting it up into many dataframes though.
-# 
-# library(plyr)
-# x2 <- daply(c2, .(t1), function(x){(x[,1])})
-#  x2$Level1
-# #or
-# x[["Level1"]]
-# x2 <- ddply(c2, .(t1), mutate, xs = seq_along(t1))
 ```
 

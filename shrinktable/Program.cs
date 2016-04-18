@@ -20,6 +20,8 @@ namespace shrinkTable
 
             //read header line
             var line = reader.ReadLine();
+            writer.WriteLine(line);
+
 
             var word = "";
             var count = 1;
