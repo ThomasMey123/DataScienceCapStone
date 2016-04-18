@@ -1,3 +1,8 @@
+require(data.table)
+require(dplyr)
+
+debug.print<-FALSE
+
 preprocess<-function(docs,p) {
     msg<-Sys.setlocale("LC_ALL","English")
     
@@ -37,6 +42,7 @@ preprocess<-function(docs,p) {
 
 #get up the last three words
 getTail <-function(x,nWords=3){
+    if(is.null(x)) x<-""
     matches<-gregexpr("[[:alpha:](\'[:alpha:])?]+",x)
     m3<-tail(matches[[1]],n=nWords)
     res<-substr(x,m3[1],nchar(x))
@@ -48,32 +54,36 @@ makeNGramMatchRegex<-function(x){
 }
 
 
-predictWord <-function(test,n) {
-    print(paste0("Predicting for \'",test,"\'"))
-    testNGram<-getTail(test)
-    
-    testNGram<-makeNGramMatchRegex(testNGram)
-    
-    
-    testNGram2<-getTail(testNGram,2)
-    testNGram2<-makeNGramMatchRegex(testNGram2)
-    f<-grep(testNGram2,n3GramTable$word)
-    r<-NULL
-    
-    if(length(f)>0){
-        r<-n3GramTable[f[1:n],]
-    } else {
-        testNGram1<-getTail(testNGram,1)
-        testNGram1<-makeNGramMatchRegex(testNGram1)
-        f<-grep(testNGram1,n2GramTable$word)
-        
-        if(length(f)>0){
-            r<-n2GramTable[f[1:n],]
-        } else{
-            r<-n1GramTable[1:n,]
-        }
+predictWord <-function(ngt1,ngt2,ngt3,test,n) {
+    if(debug.print){
+        print(paste0("Predicting for \'",test,"\'"))
     }
-    lapply(r, function(y) getTail(as.character(y),1))
+    testNGram<-getTail(test)
+        
+    testNGram2<-getTail(testNGram,2)
+    f<-filter(ngt3, t1 == testNGram2)
+    
+    r<-NULL
+    if(nrow(f)>0){
+        r<-f[1:(min(nrow(f),n)),2]
+    } 
+    
+    if(length(r)<n) 
+    {
+        testNGram1<-getTail(testNGram,1)
+        f<-filter(ngt2, t1 == testNGram1)
+        
+        if(nrow(f)>0){
+            r<-c(r,f[1:min(nrow(f),n-length(r)),2])
+        } 
+    }
+    
+    if(length(r)<n) 
+    {
+        r2<-ngt1[1:(n-length(r)),1]
+        r<-c(r,r2)
+    }
+    r
 }
 
 isBlank<-function(y) substr(y,nchar(y),nchar(y)) == " "

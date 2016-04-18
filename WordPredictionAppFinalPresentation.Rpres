@@ -1,0 +1,49 @@
+<style>
+.small-code pre code {
+  font-size: 1em;
+}
+</style>
+
+
+
+Word Predition Application
+========================================================
+author: Thomas Mey
+date: 17.04.2016
+
+Summary
+========================================================
+
+- Bla bla
+
+The goal of this exercise is to "pitch" your data product to your boss or an investor. The slide deck is constrained to be 5 slides or less and should: 
+(1) explain how your model works, 
+(2) describe its predictive performance quantitatively and 
+(3) show off the app and how it works. 
+
+1.Create a slide deck promoting your product. Write 5 slides using RStudio Presenter explaining your product and why it is awesome!
+
+Questions to consider
+
+
+
+
+How does the model work?
+========================================================
+1.How can you briefly explain how your predictive model works?
+
+
+Performance of the prediction algorithm
+========================================================
+
+2.How can you succinctly quantitatively summarize the performance of your prediction algorithm?
+<small>
+The following two histograms show the distribution of frequency of terms, on the left with linear scale, on the right with exponantial scale for both axes. The exponential scale shows well that few terms appear very often whereas very many terms appear very seldom.</small>
+
+
+The app
+========================================================
+3.How can you show the user how the product works?
+
+
+
