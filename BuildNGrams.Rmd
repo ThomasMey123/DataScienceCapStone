@@ -212,7 +212,29 @@ head(ff2)
 
 
 ```{r}
+options(mc.cores=4)
 #ngt2[ngt2[,1]=="after",][1:10,]
+library(plyr)
+?ddply
+
+x<-c2[1:10000,]
+head(x)
+x$xs<-0
+ux<-as.character(unique(x$t1))
+for(i in 1:length(ux)){
+    s<-ux[i]
+    s1<-x[x[,1]==s,1]
+    x[x[,1]==s,]$xs<-seq_along(s1)
+}
+
+
+head(x,n=100)
+tail(x,n=100)
+
+x1<-filter(x,xs<10)
+dim(x1)
+head(x1,n=100)
+tail(x1,n=100)
 
 ```
 
