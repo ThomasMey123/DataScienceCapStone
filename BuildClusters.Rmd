@@ -1,0 +1,63 @@
+---
+title: "ClusterWords"
+author: "Thomas Mey"
+date: "18. April 2016"
+output: html_document
+---
+
+#Read Ngrams
+```{r}
+library(data.table)
+library(dplyr)
+
+processing.size<-"small"
+
+directory<-paste0(".\\data\\", processing.size, "\\en_US")
+nGramDirectory<-paste0(".\\data\\", processing.size, "\\NGrams")
+if(!file.exists(nGramDirectory)) {
+     dir.create(nGramDirectory)
+}
+
+## read profanity
+con <- file(".\\data\\profanity_en.txt", "r") 
+p<-readLines(con) 
+close(con)
+
+source("WordPredictionApp/Common.r")
+``` 
+
+
+
+```{r }
+ngt1<-read.csv(paste0(nGramDirectory,"\\N1Grams.csv"),colClasses = c("character","integer"))
+ngt1<-ngt1[1:5000,]
+
+tail(ngt1)
+
+library(tm)   
+words <- Corpus(VectorSource(ngt1))
+words[[1]]
+
+words <- tm_map(words, removeWords, stopwords("english"))
+words <- tm_map(words, stemDocument, language = "english")  
+
+clustDir<-".\\data\\cluster"
+docs <- Corpus(DirSource(clustDir))
+
+docs[[1]]
+
+docs<-preprocess(docs,p)
+docs <- tm_map(docs, removeWords, stopwords("english"))
+docs<-preprocess(docs,p)
+
+corpus_df <- data.frame(text=lapply(docs[1], '[',"content"), stringsAsFactors=F)
+
+corpus_df<-corpus_df$content
+corpus_df[20]
+length(corpus_df)
+
+
+
+```
+
+
