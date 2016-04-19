@@ -17,7 +17,7 @@ Sys.sleep(1)
 shinyServer(
     function(input,output,clientData,session){
         res <- reactive({
-            r<-predictWord(n1GramTable,n2GramTable,n3GramTable,tolower(input$text),5)
+            r<-predictWord(n1GramTable,n2GramTable,n3GramTable,input$text,6)
             return(r)
         })
 

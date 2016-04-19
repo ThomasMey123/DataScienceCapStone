@@ -105,17 +105,11 @@ nGramTable <- function( nGramTokens) {
 ngt1<-nGramTable(ng1)
 rownames(ngt1)<-NULL
 
-write.csv(ngt1,file= paste0(nGramDirectory,"\\N1GramsF.csv"),row.names = FALSE)
-
-
-
 ngt2<-nGramTable(ng2)
 rownames(ngt2)<-NULL
-write.csv(ngt2,file= paste0(nGramDirectory,"\\N2GramsF.csv"),row.names = FALSE)
 
 ngt3<-nGramTable(ng3)
 rownames(ngt3)<-NULL
-write.csv(ngt3,file= paste0(nGramDirectory,"\\N3GramsF.csv"),row.names = FALSE)
 
 #ngt4<-nGramTable(ng4)
 #rownames(ngt4)<-NULL
@@ -130,6 +124,7 @@ rm(corpus_df,ng1,ng2,ng3)
 
 ```{r}
 ngt1<-setorder(ngt1, -freq )
+write.csv(ngt1,file= paste0(nGramDirectory,"\\N1GramsF.csv"),row.names = FALSE)
 write.csv(ngt1[ngt1$freq>1,],file= paste0(nGramDirectory,"\\N1Grams.csv"),row.names = FALSE)
 
 
@@ -145,6 +140,7 @@ tail(ngt2)
 filter(ngt2, t1 == "affected")
 head(ngt2)
 tail(ngt2)
+write.csv(ngt2,file= paste0(nGramDirectory,"\\N2GramsF.csv"),row.names = FALSE)
 write.csv(ngt2[ngt2$freq>1,],file= paste0(nGramDirectory,"\\N2Grams.csv"),row.names = FALSE)
 
 
@@ -159,6 +155,7 @@ ngt3 <-  setorder(ngt3, t1, -freq )
 filter(ngt3, t1 == "affected by")
 head(ngt3)
 tail(ngt3)
+write.csv(ngt3,file= paste0(nGramDirectory,"\\N3GramsF.csv"),row.names = FALSE)
 write.csv(ngt3[ngt3$freq>1,],file= paste0(nGramDirectory,"\\N3Grams.csv"),row.names = FALSE)
 ```
 

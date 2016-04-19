@@ -58,7 +58,7 @@ corpus_df[19]
 length(corpus_df)
 
 #build sample stings
-numberOfStingsToSample<-500
+numberOfStingsToSample<-1000
 set.seed(1234)
 
 n<-sample(length(corpus_df),numberOfStingsToSample)
@@ -98,7 +98,7 @@ ptm <- proc.time()
 print(paste("Processing items:",dim(tt)[1]))
 r<-NULL
 for(i in 1:dim(tt)[1]) {
-  res<-predictWord(n1GramTable,n2GramTable,n3GramTable ,as.character(tt[i,1]),5)
+  res<-predictWord(n1GramTable,n2GramTable,n3GramTable ,as.character(tt[i,1]),6)
   r1<-tt[i,2]  %in% res
   if(debug.print){
     print(paste("item:",i))
