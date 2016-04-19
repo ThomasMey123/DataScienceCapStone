@@ -180,3 +180,4 @@ write.csv(ngt3[ngt3$freq>1,],file= paste0(nGramDirectory,"\\N3Grams.csv"),row.na
 # tail(x1,n=100)
 ```
 
+
