@@ -11,26 +11,32 @@ Word Predition Application
 author: Thomas Mey
 date: 17.04.2016
 
-Summary
+
+This slidedeck describes an application that suggests words based on previous input, e.g. if you entered "This summer" the application would suggest  <b>TO DO</b>... . Try out! It will be fun to use!
+The application can be found at: <b>TO DO</b>
+
+The following slides describe the algorithm, the prediction performance and show the applicaiton.
+
+[//]: # "The goal of this exercise is to pitch your data product to your boss or an investor. The slide deck is constrained to be 5 slides or less and should:" 
+[//]: # "(1) explain how your model works, "
+[//]: # "(2) describe its predictive performance quantitatively and "
+[//]: # "(3) show off the app and how it works. "
+
+
+How does the model work? - I
+========================================================
+<small>Simply put the model consists of the following steps: Extracting samples, Preprocessing, Building NGrams, Predicting based on NGrams  
+
+- <b>Samples</b> with different sizes of the original corpus are extracted for two purposes: Analyze how the prediction quality and prediction performance change with different sets of sample sizes.
+- In the <b>preprocessing</b> (using the tm package) all charcters are removed except a-zA-Z and the single quote (e.g. to treat don't as one word), everything is converted to lowercase and profanitiy terms are removed. Note that the prediciton uses the same preprocessing and only lowercase words will be suggested.
+- <b>NGrams</b> of order 1 to 3 are build with quanteda (because i had performance problems with Weka tokenizer and rm package) an NGram table with NGram frequencies is build for order. Based on those Kneser-Ney smoothing was applied to lower order NGram tables (1 to 2) - again only with frequencies instead of proper probabilities. 
+- The <b>prediction algorithm</b> uses the NGrams with stupid backoff, i.e. it looks for a trigram that matches the last two words of input, if less than the desired tokens are found it look for a bigram that matches the last word, finally it looks for a unigram.
+</small>
+
+How does the model work? - II
 ========================================================
 
-- Bla bla
 
-The goal of this exercise is to "pitch" your data product to your boss or an investor. The slide deck is constrained to be 5 slides or less and should: 
-(1) explain how your model works, 
-(2) describe its predictive performance quantitatively and 
-(3) show off the app and how it works. 
-
-1.Create a slide deck promoting your product. Write 5 slides using RStudio Presenter explaining your product and why it is awesome!
-
-Questions to consider
-
-
-
-
-How does the model work?
-========================================================
-1.How can you briefly explain how your predictive model works?
 
 
 Performance of the prediction algorithm
@@ -38,8 +44,14 @@ Performance of the prediction algorithm
 
 2.How can you succinctly quantitatively summarize the performance of your prediction algorithm?
 <small>
-The following two histograms show the distribution of frequency of terms, on the left with linear scale, on the right with exponantial scale for both axes. The exponential scale shows well that few terms appear very often whereas very many terms appear very seldom.</small>
+<b>Performance as in quality</b> or: how well does the model predict the next word? Out of a testset strings have been subsampled to emulate a real world typing experience, <b>TO DO: example</b>.
+The model performance should match what the application does, so test strings are preprocessed (including lowercase conversion) and 6 word are predicted. If one of the 6 words matches the probe the test result is true, otherwise false.
 
+
+
+Performance as in response time
+
+</small>
 
 The app
 ========================================================

@@ -13,20 +13,14 @@ output: html_document
 library(data.table)
 library(dplyr)
 
-processing.size<-"small"
+source("commonProcess.R")
+source("WordPredictionApp/Common.r")
 
-directory<-paste0(".\\data\\", processing.size, "\\en_US")
-nGramDirectory<-paste0(".\\data\\", processing.size, "\\NGrams")
-if(!file.exists(nGramDirectory)) {
-     dir.create(nGramDirectory)
-}
 ```
 
 ## read profanity
 ```{r }
-con <- file(".\\data\\profanity_en.txt", "r") 
-p<-readLines(con) 
-close(con)
+p<-readProfanity()
 ``` 
 
 
@@ -63,102 +57,95 @@ docsSummary<-function(docs) {
 ```{r}
 options(mc.cores=1)
 
-source("WordPredictionApp/Common.r")
-
 library(tm)   
-docs <- Corpus(DirSource(directory))
-docsSummary(docs)
+for(i in 1:length(percentages)){
+  percentage<-percentages[i]
+  print(paste0("Building ngrams with ", percentage, "%"  ))
 
-docs<-preprocess(docs,p)
-
-docs[[3]]$content[500]
-
-corpus_df <- data.frame(text=lapply(docs[1], '[',"content"), stringsAsFactors=F)
-corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[2], '[',"content"), stringsAsFactors=F))
-corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[3], '[',"content"), stringsAsFactors=F))
-
-
-corpus_df<-corpus_df$content
-corpus_df[19]
-
-corpus_df<-paste(corpus_df,collapse = "")
-
-require(quanteda)
-
-ng1<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=1)
-ng2<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=2)
-ng3<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=3)
-#ng4<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=4)
-
-
-require(data.table)
-nGramTable <- function( nGramTokens) {
-  nGramTable <- data.frame(table(nGramTokens))
-  colnames(nGramTable) <- c("word", "freq")
+  trainDir<-makeFileName(dir.root,percentage,dir.train)
+  nGramDirectory<-makeFileName(root,percentage,dir.ngrams)
+  createDir(nGramDirectory)
+  nGramDirectory<-substr(nGramDirectory,3,10000L)
   
-  #nGramTable <-  nGramTable[order(nGramTable$freq,decreasing=TRUE),]
-  nGramTable[,1]<-as.character(nGramTable[,1])
-  nGramTable
+  docs <- Corpus(DirSource(trainDir))
+  docsSummary(docs)
+  
+  docs<-preprocess(docs,p)
+  
+  docs[[3]]$content[500]
+  
+  corpus_df <- data.frame(text=lapply(docs[1], '[',"content"), stringsAsFactors=F)
+  corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[2], '[',"content"), stringsAsFactors=F))
+  corpus_df <- rbind(corpus_df,data.frame(text=lapply(docs[3], '[',"content"), stringsAsFactors=F))
+  
+  
+  corpus_df<-corpus_df$content
+  corpus_df[19]
+  
+  corpus_df<-paste(corpus_df,collapse = "")
+  
+  require(quanteda)
+  
+  ng1<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=1)
+  ng2<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=2)
+  ng3<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=3)
+  #ng4<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=4)
+  
+  
+  # Build NGram Tables
+  ngt1<-nGramTable(ng1)
+  rownames(ngt1)<-NULL
+  
+  ngt2<-nGramTable(ng2)
+  rownames(ngt2)<-NULL
+  
+  ngt3<-nGramTable(ng3)
+  rownames(ngt3)<-NULL
+  
+  #ngt4<-nGramTable(ng4)
+  #rownames(ngt4)<-NULL
+
+  rm(corpus_df,ng1,ng2,ng3)
+  
+  #Prepare ng1 for writing
+  ngt1<-setorder(ngt1, -freq )
+  write.csv(ngt1,file= makeFileName(nGramDirectory, ngramFile.1F),row.names = FALSE)
+  write.csv(ngt1[ngt1$freq>1,],file= makeFileName(nGramDirectory, ngramFile.1),row.names = FALSE)
+  
+  
+  # prepare ng2 for witing
+  ngt2<-cbind(ngt2,data.frame(tstrsplit(ngt2[,1],split = " ")))
+  colnames(ngt2)<-c("word","freq","t1","t2")
+  #ngt2$t1<-as.character(ngt2$t1)
+  #ngt2$t2<-as.character(ngt2$t2)
+  ngt2<-setorder(ngt2, t1, -freq )
+  ngt2<-select(ngt2, t1,t2, freq)
+  tail(ngt2)
+  
+  filter(ngt2, t1 == "affected")
+  head(ngt2)
+  tail(ngt2)
+  write.csv(ngt2,file= makeFileName(nGramDirectory, ngramFile.2F),row.names = FALSE)
+  write.csv(ngt2[ngt2$freq>1,],file= makeFileName(nGramDirectory, ngramFile.2),row.names = FALSE)
+  
+  
+  # prepare ng3 for witing
+  ngt3<-cbind(ngt3,data.frame(tstrsplit(ngt3[,1],split = " ")))
+  colnames(ngt3)<-c("word","freq","t1","t2","t3")
+  ngt3$t1<-paste(as.character(ngt3$t1),as.character(ngt3$t2))
+  ngt3$t2<-ngt2$t3
+  colnames(ngt3)<-c("word","freq","t1","t2")
+  ngt3<-select(ngt3, t1,t2,freq)
+  ngt3 <-  setorder(ngt3, t1, -freq )
+  filter(ngt3, t1 == "affected by")
+  head(ngt3)
+  tail(ngt3)
+  write.csv(ngt3,file= makeFileName(nGramDirectory, ngramFile.3F),row.names = FALSE)
+  write.csv(ngt3[ngt3$freq>1,],file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
+
 }
 
-# Build NGram Tables
-ngt1<-nGramTable(ng1)
-rownames(ngt1)<-NULL
-
-ngt2<-nGramTable(ng2)
-rownames(ngt2)<-NULL
-
-ngt3<-nGramTable(ng3)
-rownames(ngt3)<-NULL
-
-#ngt4<-nGramTable(ng4)
-#rownames(ngt4)<-NULL
-#ngt41<-ngt3[ngt4$freq>1,]
-#head(ngt41)
-#tail(ngt41)
-#write.csv(ngt41,file= paste0(nGramDirectory,"\\N4Grams.csv"),row.names = FALSE)
-
-rm(corpus_df,ng1,ng2,ng3)
 ```
-
-
-```{r}
-ngt1<-setorder(ngt1, -freq )
-write.csv(ngt1,file= paste0(nGramDirectory,"\\N1GramsF.csv"),row.names = FALSE)
-write.csv(ngt1[ngt1$freq>1,],file= paste0(nGramDirectory,"\\N1Grams.csv"),row.names = FALSE)
-
-
-# prepare ng2 for witing
-ngt2<-cbind(ngt2,data.frame(tstrsplit(ngt2[,1],split = " ")))
-colnames(ngt2)<-c("word","freq","t1","t2")
-#ngt2$t1<-as.character(ngt2$t1)
-#ngt2$t2<-as.character(ngt2$t2)
-ngt2<-setorder(ngt2, t1, -freq )
-ngt2<-select(ngt2, t1,t2, freq)
-tail(ngt2)
-
-filter(ngt2, t1 == "affected")
-head(ngt2)
-tail(ngt2)
-write.csv(ngt2,file= paste0(nGramDirectory,"\\N2GramsF.csv"),row.names = FALSE)
-write.csv(ngt2[ngt2$freq>1,],file= paste0(nGramDirectory,"\\N2Grams.csv"),row.names = FALSE)
-
-
-# prepare ng3 for witing
-ngt3<-cbind(ngt3,data.frame(tstrsplit(ngt3[,1],split = " ")))
-colnames(ngt3)<-c("word","freq","t1","t2","t3")
-ngt3$t1<-paste(as.character(ngt3$t1),as.character(ngt3$t2))
-ngt3$t2<-ngt2$t3
-colnames(ngt3)<-c("word","freq","t1","t2")
-ngt3<-select(ngt3, t1,t2,freq)
-ngt3 <-  setorder(ngt3, t1, -freq )
-filter(ngt3, t1 == "affected by")
-head(ngt3)
-tail(ngt3)
-write.csv(ngt3,file= paste0(nGramDirectory,"\\N3GramsF.csv"),row.names = FALSE)
-write.csv(ngt3[ngt3$freq>1,],file= paste0(nGramDirectory,"\\N3Grams.csv"),row.names = FALSE)
-```
-
 
 
 
