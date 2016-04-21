@@ -8,63 +8,60 @@ output: html_document
 library(data.table)
 library(dplyr)
 
-processing.size<-"small"
-
-directory<-paste0(".\\data\\", processing.size, "\\en_US")
-nGramDirectory<-paste0(".\\data\\", processing.size, "\\NGrams")
-if(!file.exists(nGramDirectory)) {
-     dir.create(nGramDirectory)
-}
+source("commonProcess.R")
+source("WordPredictionApp/Common.r")
 
 ```
 
 ```{r}
-#compute KN smoothing for unigrams based on bigrams
-ngt2<-read.csv(paste0(nGramDirectory,"\\N2GramsF.csv"),colClasses = c("character","integer"))
-ngt2<-cbind(ngt2,data.frame(tstrsplit(ngt2[,1],split = " ")))
-colnames(ngt2)<-c("word","freq","t1","t2")
-ngt2<-select(ngt2, t1,t2, freq)
-ngt2<-setorder(ngt2,t2,t1)
+i<-1
+for(i in 1:length(percentages)) {
+    percentage<-percentages[i]
+    nGramDirectory<-makeFileName(dir.root,percentage,dir.ngrams)
+    nGramDirectory<-substr(nGramDirectory,3,10000L)
+    
+    #compute KN smoothing for unigrams based on bigrams
+    ngt2<-read.csv(makeFileName(nGramDirectory, ngramFile.2F),colClasses = c("character","character","integer"))
+    ngt2<-cbind(ngt2,data.frame(tstrsplit(ngt2[,1],split = " ")))
+    colnames(ngt2)<-c("word","freq","t1","t2")
+    ngt2<-select(ngt2, t1,t2, freq)
+    ngt2<-setorder(ngt2,t2,t1)
+    
+    c1<-data.frame(table(ngt2$t2))
+    colnames(c1)<-c("word","freq")
+    c1<-setorder(c1,-freq)
+    c1<-c1[c1$freq>1,]
+    
+    head(c1)
+    tail(c1)
+    write.csv(c1,file= makeFileName(nGramDirectory, ngramFile.1KN),row.names = FALSE)
+    rm(ngt2,c1)
+    
+    #compute KN smoothing for bigrams based on trigrams
+    ngt3<-read.csv(makeFileName(nGramDirectory, ngramFile.3F),colClasses = c("character","character","integer"))
+    ngt3<-cbind(ngt3,data.frame(tstrsplit(ngt3[,1],split = " ")))
+    colnames(ngt3)<-c("term","t3","freq","t1","t2")
+    ngt3<-select(ngt3, t1,t2,t3,freq)
+    ngt3$t2<-paste(as.character(ngt3$t2),as.character(ngt3$t3))
+    ngt3<-select(ngt3, t1,t2,freq)
+    ngt3<-setorder(ngt3, t2, -freq )
+    
+    head(ngt3[10000:11000,],20)
+    tail(ngt3)
+    
+    c2<-data.frame(table(ngt3$t2))
+    colnames(c2)<-c("word","freq")
+    c2<-setorder(c2,-freq)
 
-c1<-data.frame(table(ngt2$t2))
-colnames(c1)<-c("word","freq")
-c1<-setorder(c1,-freq)
-c1<-c1[c1$freq>1,]
-
-head(c1)
-tail(c1)
-write.csv(c1,file= paste0(nGramDirectory,"\\N1GramsKN.csv"),row.names = FALSE)
-rm(ngt2,c1)
-
-#compute KN smoothing for bigrams based on trigrams
-ngt3<-read.csv(paste0(nGramDirectory,"\\N3GramsF.csv"),colClasses = c("character","integer"))
-ngt3<-cbind(ngt3,data.frame(tstrsplit(ngt3[,1],split = " ")))
-colnames(ngt3)<-c("word","freq","t1","t2","t3")
-ngt3$t2<-paste(as.character(ngt3$t2),as.character(ngt3$t3))
-colnames(ngt3)<-c("word","freq","t1","t2")
-ngt3<-select(ngt3, t1,t2,freq)
-ngt3 <-  setorder(ngt3, t2, -freq )
-
-head(ngt3[10000:11000,],20)
-tail(ngt3)
-
-c2<-data.frame(table(ngt3$t2))
-colnames(c2)<-c("word","freq")
-c2<-setorder(c2,-freq)
-c2<-c2[c2$freq>1,]
-
-#prepare for writing (like bigrams...)
-c2<-c2[c2$freq>1,]
-c2<-cbind(c2,data.frame(tstrsplit(c2[,1],split = " ")))
-colnames(c2)<-c("word","freq","t1","t2")
-c2<-setorder(c2, t1, -freq )
-c2<-select(c2, t1,t2, freq)
-
-head(c2)
-tail(c2)
-write.csv(c2,file= paste0(nGramDirectory,"\\N2GramsKN.csv"),row.names = FALSE)
-
-ff2<-data.frame(table(c2$t1))
-ff2<-setorder(ff2, -Freq )
-head(ff2)
+    #prepare for writing (like bigrams...)
+    c2<-c2[c2$freq>1,]
+    c2<-cbind(c2,data.frame(tstrsplit(c2[,1],split = " ")))
+    colnames(c2)<-c("word","freq","t1","t2")
+    c2<-setorder(c2, t1, -freq )
+    c2<-select(c2, t1,t2, freq)
+    
+    head(c2)
+    tail(c2)
+    write.csv(c2,file= paste0(makeFileName(nGramDirectory, ngramFile.2KN)),row.names = FALSE)
+}
 ```

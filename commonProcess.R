@@ -41,7 +41,7 @@ makeFileName<- function(...) {
 }
 
 downloadFiles<-function(swiftkeyUri, profanityUri) {
-  makeDir("./data")
+  createDir("./data")
   dateDownloaded<-as.POSIXlt(Sys.time()) # the current time in UTC
   if(!file.exists(".\\data\\Coursera-SwiftKey.zip")) {
     download.file(swiftkeyFile,destfile = ".\\data\\Coursera-SwiftKey.zip", method="auto", mode="wb")

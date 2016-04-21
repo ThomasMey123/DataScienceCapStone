@@ -12,6 +12,9 @@ output: html_document
 ```{r}
 library(data.table)
 library(dplyr)
+library(tm) 
+require(quanteda)
+
 
 source("commonProcess.R")
 source("WordPredictionApp/Common.r")
@@ -57,13 +60,12 @@ docsSummary<-function(docs) {
 ```{r}
 options(mc.cores=1)
 
-library(tm)   
-for(i in 1:length(percentages)){
+for(i in 8:length(percentages)){
   percentage<-percentages[i]
   print(paste0("Building ngrams with ", percentage, "%"  ))
 
   trainDir<-makeFileName(dir.root,percentage,dir.train)
-  nGramDirectory<-makeFileName(root,percentage,dir.ngrams)
+  nGramDirectory<-makeFileName(dir.root,percentage,dir.ngrams)
   createDir(nGramDirectory)
   nGramDirectory<-substr(nGramDirectory,3,10000L)
   
@@ -84,8 +86,7 @@ for(i in 1:length(percentages)){
   
   corpus_df<-paste(corpus_df,collapse = "")
   
-  require(quanteda)
-  
+ 
   ng1<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=1)
   ng2<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=2)
   ng3<-tokenize(corpus_df, what="fastestword",concatenator = " ", ngrams=3)
