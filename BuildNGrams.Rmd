@@ -60,7 +60,7 @@ docsSummary<-function(docs) {
 ```{r}
 options(mc.cores=4)
 
-for(i in 9:length(percentages)){
+for(i in 1:length(percentages)){
   percentage<-percentages[i]
   print(paste0("Building ngrams with ", percentage, "%"  ))
 

@@ -82,14 +82,28 @@ makeSmall<-function(root,train,test,name,percentages,percentageTest){
   
   con1<-file(source,readmode )
   t1<-readLines(con1)
-  l1<-length(t1  )
+  l1<-length(t1 )
   close(con1)
+
+  #set aside test set
+  print(paste0("Building Test set with" ))
+  testDir<-makeFileName(root,test)
+  createDir(testDir)    
+  testFile<-makeFileName(root,test,name)
   
+  l3<-as.integer(l1*0.95)
+  t3<-t1[l3:l1]
+  con3<-file(testFile,"w")
+  writeLines(t3,con3)
+  close(con3)
+  
+  #Use remaining lines for train set
+  t1<-t1[1:l3-1]
 
   set.seed(123)
   for(i in 1:length(percentages)){
     percentage<-percentages[i]
-    print(paste0("Building training and test set with ", percentage, "%"  ))
+    print(paste0("Building training set with ", percentage, "%"  ))
 
     baseDir<-makeFileName(root,percentage)
     trainDir<-makeFileName(root,percentage,train)
@@ -99,19 +113,11 @@ makeSmall<-function(root,train,test,name,percentages,percentageTest){
     createDir(testDir)    
     
     trainFile<-makeFileName(root,percentage,train,name)
-    testFile<-makeFileName(root,percentage,test,name)
     
-    #print(trainFile)
-    #print(testFile)
     t2<-sample(t1,l1*percentage/100)
     con2<-file(trainFile,"w")
     writeLines(t2,con2)
     close(con2)
-
-    t3<-sample(t1,l1*percentage/100 * percentageTest/100)
-    con3<-file(testFile,"w")
-    writeLines(t3,con3)
-    close(con3)
   }  
   print(paste0("Building training and test finished"  ))
   
