@@ -70,7 +70,7 @@ for(i in 1:length(percentages)){
   nGramDirectory<-substr(nGramDirectory,3,10000L)
   
   docs <- Corpus(DirSource(trainDir))
-  docsSummary(docs)
+  #docsSummary(docs)
   
   docs<-preprocess(docs,p)
   
