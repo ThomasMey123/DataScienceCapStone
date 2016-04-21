@@ -58,7 +58,7 @@ docsSummary<-function(docs) {
 
 #preprocess and build dtm
 ```{r}
-options(mc.cores=1)
+options(mc.cores=4)
 
 for(i in 9:length(percentages)){
   percentage<-percentages[i]

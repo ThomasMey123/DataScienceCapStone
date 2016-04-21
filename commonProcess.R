@@ -55,7 +55,7 @@ downloadFiles<-function(swiftkeyUri, profanityUri) {
   }
   
   if(!file.exists(".\\data\\profanity_en.txt")) {
-    download.file(fileurl,destfile = ".\\data\\profanity_en.txt", method="auto", mode="w")
+    download.file(profanityUri,destfile = ".\\data\\profanity_en.txt", method="auto", mode="w")
   }
 }
 
