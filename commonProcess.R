@@ -107,11 +107,9 @@ makeSmall<-function(root,train,test,name,percentages,percentageTest){
 
     baseDir<-makeFileName(root,percentage)
     trainDir<-makeFileName(root,percentage,train)
-    testDir<-makeFileName(root,percentage,test)
     createDir(baseDir)    
     createDir(trainDir)    
-    createDir(testDir)    
-    
+
     trainFile<-makeFileName(root,percentage,train,name)
     
     t2<-sample(t1,l1*percentage/100)

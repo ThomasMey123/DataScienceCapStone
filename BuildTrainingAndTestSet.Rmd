@@ -18,6 +18,5 @@ makeSmall(dir.root, dir.train,dir.test,"en_US.twitter.txt",percentages,percentag
 makeSmall(dir.root, dir.train,dir.test,"en_US.blogs.txt",percentages,percentageTest)
 makeSmall(dir.root, dir.train,dir.test,"en_US.news.txt",percentages,percentageTest)
 
-
 ```
 
