@@ -60,7 +60,7 @@ docsSummary<-function(docs) {
 ```{r}
 options(mc.cores=1)
 
-for(i in 8:length(percentages)){
+for(i in 9:length(percentages)){
   percentage<-percentages[i]
   print(paste0("Building ngrams with ", percentage, "%"  ))
 
@@ -143,6 +143,9 @@ for(i in 8:length(percentages)){
   tail(ngt3)
   write.csv(ngt3,file= makeFileName(nGramDirectory, ngramFile.3F),row.names = FALSE)
   write.csv(ngt3[ngt3$freq>1,],file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
+
+  rm(ngt1,ngt2,ngt3)
+  gc()
 
 }
 
