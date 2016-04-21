@@ -91,7 +91,7 @@ makeSmall<-function(root,train,test,name,percentages,percentageTest){
   createDir(testDir)    
   testFile<-makeFileName(root,test,name)
   
-  l3<-as.integer(l1*0.95)
+  l3<-l1-10000
   t3<-t1[l3:l1]
   con3<-file(testFile,"w")
   writeLines(t3,con3)

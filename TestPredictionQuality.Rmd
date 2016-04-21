@@ -121,21 +121,8 @@ for(i in 1:length(percentages)) {
     tm
     print("Time consumed per prediction(ms):")
     tm[3]/length(r)*1000    
-        
-    
-    
 }
 
 ```
 
     
-
-
-
-```{r}
-
-
-
-```
-
-
