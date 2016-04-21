@@ -24,7 +24,7 @@ p<-readProfanity()
 
 
 ```{r}
-buildTestSet<-function(directory,p) {
+buildTestSet<-function(directory,p,samplesize) {
     #build test string and match
     #build and cleanse test corpus
     docs <- Corpus(DirSource(directory))
@@ -44,7 +44,7 @@ buildTestSet<-function(directory,p) {
     length(corpus_df)
     
     #build sample stings
-    numberOfStingsToSample<-1000
+    numberOfStingsToSample<-samplesize / 10
     set.seed(1234)
     
     n<-sample(length(corpus_df),numberOfStingsToSample)
@@ -67,7 +67,7 @@ buildTestSet<-function(directory,p) {
       tt<-rbind(tt,t1)
     }
 
-    tt[1:10000,]
+    tt[1:samplesize,]
 }
 ```
 
@@ -75,8 +75,9 @@ buildTestSet<-function(directory,p) {
 
 ```{r}
 options(mc.cores=2)
+samplesize<-10000
 
-tt<-buildTestSet(makeFileName(dir.root,dir.test),p)
+tt<-buildTestSet(makeFileName(dir.root,dir.test),p,samplesize)
 
 head(tt)
 
@@ -112,7 +113,7 @@ for(i in 1:length(percentages)) {
     
     pq<-rt[2]/length(r)*100
     print(paste("NGram table sizes (3,2,1):",nrow(n3GramTable),nrow(n2GramTable),nrow(n1GramTable)))
-    print(paste("Number of test strings:",numberOfStingsToSample))
+    print(paste("Number of test strings:",samplesize))
     print(paste("Number of samples:",length(r)))
     print("Matches:")
     rt
