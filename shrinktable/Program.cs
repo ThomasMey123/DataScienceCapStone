@@ -11,11 +11,23 @@ namespace shrinkTable
     {
         static void Main(string[] args)
         {
+            if(args.Length<2)
+            {
+                Console.WriteLine("Usage: shrinkTable inputfile outputfile [numberoflines=6])");
+                return;
+            }
+
             string filename = args[0];
+            string destfile = args[1];
+            int numberOfLines = 6;
+            if(args.Length==3)
+            {
+                numberOfLines = Int32.Parse(args[2]);
+            }
 
             Console.WriteLine("processing " + filename);
             var reader = new StreamReader(File.OpenRead(filename));
-            var writer = new StreamWriter("shrunk_"+filename, false);
+            var writer = new StreamWriter(destfile, false);
             var doShrink = true;
 
             //read header line
@@ -46,7 +58,7 @@ namespace shrinkTable
 
                 if(doShrink)
                 {
-                    if(count<=10)
+                    if(count<= numberOfLines)
                     {
                         writer.WriteLine(line);
                     }
