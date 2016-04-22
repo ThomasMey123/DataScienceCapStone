@@ -142,7 +142,11 @@ for(i in 1:length(percentages)){
   head(ngt3)
   tail(ngt3)
   write.csv(ngt3,file= makeFileName(nGramDirectory, ngramFile.3F),row.names = FALSE)
-  write.csv(ngt3[ngt3$freq>1,],file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
+  #write.csv(ngt3[ngt3$freq>1,],file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
+
+  dt <- setDT(ngt3[ngt3$freq>1,])
+  dt[, head(.SD,20), by=.(t1)]
+  write.csv(dt,file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
 
   rm(ngt1,ngt2,ngt3)
   gc()
@@ -169,6 +173,18 @@ for(i in 1:length(percentages)){
 # dim(x1)
 # head(x1,n=100)
 # tail(x1,n=100)
+
+#library(data.table)
+
+# DT = dein Data table.
+# falls du nur ein data.frame hast, konvertiere effizient so:
+# DT <- setDT(my.data.frame)
+
+# pro Gruppe nur die ersten zehn Zeilen ausgeben:
+#DT[, head(.SD,10), by=.(colname1, colname2)]
+# .SD = alle Daten der Gruppe als data.table
+# .() = Abkürzung für eine Liste innerhalb einer data.table (es ginge auch list(), das ist aber länger)
+
 ```
 
 
