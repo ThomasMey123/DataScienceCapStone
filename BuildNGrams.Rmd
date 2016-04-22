@@ -142,11 +142,7 @@ for(i in 1:length(percentages)){
   head(ngt3)
   tail(ngt3)
   write.csv(ngt3,file= makeFileName(nGramDirectory, ngramFile.3F),row.names = FALSE)
-  #write.csv(ngt3[ngt3$freq>1,],file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
-
-  dt <- setDT(ngt3[ngt3$freq>1,])
-  dt[, head(.SD,20), by=.(t1)]
-  write.csv(dt,file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
+  write.csv(ngt3[ngt3$freq>1,],file= makeFileName(nGramDirectory, ngramFile.3),row.names = FALSE)
 
   rm(ngt1,ngt2,ngt3)
   gc()
