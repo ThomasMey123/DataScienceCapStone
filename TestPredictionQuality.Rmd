@@ -30,7 +30,7 @@ buildTestSet<-function(directory,p,samplesize) {
     docs <- Corpus(DirSource(directory))
     docs<-preprocess(docs,p)
     
-    docs[[3]]$content[500]
+    docs[[3]]$content[1]
     length(docs[[1]]$content)
     length(docs[[2]]$content)
     length(docs[[3]]$content)
@@ -44,7 +44,7 @@ buildTestSet<-function(directory,p,samplesize) {
     length(corpus_df)
     
     #build sample stings
-    numberOfStingsToSample<-samplesize / 10
+    numberOfStingsToSample<-samplesize / 5
     set.seed(1234)
     
     n<-sample(length(corpus_df),numberOfStingsToSample)
@@ -75,11 +75,14 @@ buildTestSet<-function(directory,p,samplesize) {
 
 ```{r}
 options(mc.cores=2)
-samplesize<-10000
+samplesize<-100
 
 tt<-buildTestSet(makeFileName(dir.root,dir.test),p,samplesize)
 
 head(tt)
+
+testresults<-data.frame()
+testRun<-1
 
 for(i in 1:length(percentages)) {
     #Read NGrams
@@ -87,41 +90,64 @@ for(i in 1:length(percentages)) {
     nGramDirectory<-makeFileName(dir.root,percentage,dir.ngrams)
     nGramDirectory<-substr(nGramDirectory,3,10000L)
     
-    n1GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile.1KN),colClasses = c("character","integer"))
-    n2GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile.2KN),colClasses = c("character","character","integer"))
-    n3GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile.3),colClasses = c("character","character","integer"))
-
-    #test...
-    ptm <- proc.time()
-    print(paste("Processing items:",dim(tt)[1]))
-    r<-NULL
-    for(i in 1:dim(tt)[1]) {
-      res<-predictWord(n1GramTable,n2GramTable,n3GramTable ,as.character(tt[i,1]),6)
-      r1<-tt[i,2]  %in% res
-      if(debug.print){
-        print(paste("item:",i))
-        print(paste("Match:", tt[i,2]))
-        print(res)
-        print(r1)
+    for(j in 1:length(ngramFile1Test)){ 
+      n1GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile1Test[j]),
+                            colClasses = c("character","integer"))
+      n2GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile2Test[j]),
+                            colClasses = c("character","character","integer"))
+      n3GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile3Test[j]),
+                            colClasses = c("character","character","integer"))
+  
+      #test...
+      ptm <- proc.time()
+      print(paste("Processing items:",dim(tt)[1]))
+      r<-NULL
+      for(i in 1:dim(tt)[1]) {
+        res<-predictWord(n1GramTable,n2GramTable,n3GramTable ,as.character(tt[i,1]),6)
+        r1<-tt[i,2]  %in% res
+        if(debug.print){
+          print(paste("item:",i))
+          print(paste("Match:", tt[i,2]))
+          print(res)
+          print(r1)
+        }
+        r<-c(r,r1)
       }
-      r<-c(r,r1)
+      tm<-proc.time() - ptm
+      
+      
+      rt<-table(r==TRUE)
+      
+      pq<-rt[2]/length(r)*100
+      print(paste("NGram table sizes (3,2,1):",nrow(n3GramTable),nrow(n2GramTable),nrow(n1GramTable)))
+      print(paste("Number of test strings:",samplesize))
+      print(paste("Number of samples:",length(r)))
+      print("Matches:")
+      print(rt)
+      print(paste("prediction quality:",pq,"%"))
+      print("Time consumed:")
+      print(tm)
+      print("Time consumed per prediction(ms):")
+      print(tm[3]/length(r)*1000    )
+ 
+      testresults[testRun,1]<-percentage
+      testresults[testRun,2]<-j
+      testresults[testRun,3]<-nrow(n1GramTable)
+      testresults[testRun,4]<-nrow(n2GramTable)
+      testresults[testRun,5]<-nrow(n3GramTable)
+
+      testresults[testRun,6]<-rt[2]
+      testresults[testRun,7]<-length(r)
+      testresults[testRun,8]<-pq
+      testresults[testRun,9]<-tm[3]/length(r)*1000 
+      colnames(testresults)<-c("percentage","variant","n1","n2","n3", "matches","samples","pq","ms")
+      
+      createDir(makeFileName(dir.root,dir.testresults))
+      write.csv(testresults,file=makeFileName(dir.root,dir.testresults,"testresults.csv "))
+      
+      
+      testRun<-testRun+1
     }
-    tm<-proc.time() - ptm
-    
-    
-    rt<-table(r==TRUE)
-    
-    pq<-rt[2]/length(r)*100
-    print(paste("NGram table sizes (3,2,1):",nrow(n3GramTable),nrow(n2GramTable),nrow(n1GramTable)))
-    print(paste("Number of test strings:",samplesize))
-    print(paste("Number of samples:",length(r)))
-    print("Matches:")
-    rt
-    print(paste("prediction quality:",pq,"%"))
-    print("Time consumed:")
-    tm
-    print("Time consumed per prediction(ms):")
-    tm[3]/length(r)*1000    
 }
 
 ```

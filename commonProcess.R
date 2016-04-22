@@ -7,6 +7,8 @@ dir.train<-"train"
 dir.test<-"test"
 dir.ngrams<-"ngrams"
 dir.download<-"download"
+dir.testresults<-"testresults"
+
 
 #Filenames
 swiftkeyUri<-"https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip"
@@ -21,6 +23,24 @@ ngramFile.2KN = "N2GramsKN.csv"
 ngramFile.3   = "N3Grams.csv"
 ngramFile.3F  = "N3GramsF.csv"
 ngramFile.3KN = "N3GramsKN.csv"
+
+ngramFile1Test<-NULL
+ngramFile2Test<-NULL
+ngramFile3Test<-NULL
+
+ngramFile1Test[1]<-ngramFile.1
+ngramFile2Test[1]<-ngramFile.2
+ngramFile3Test[1]<-ngramFile.3
+
+ngramFile1Test[2]<-ngramFile.1KN
+ngramFile2Test[2]<-ngramFile.2KN
+ngramFile3Test[2]<-ngramFile.3
+
+ngramFile1Test[3]<-ngramFile.1F
+ngramFile2Test[3]<-ngramFile.2F
+ngramFile3Test[3]<-ngramFile.3
+
+
 
 #Sample sizes
 library(numbers)
