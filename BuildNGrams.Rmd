@@ -15,10 +15,8 @@ library(dplyr)
 library(tm) 
 require(quanteda)
 
-
 source("commonProcess.R")
 source("WordPredictionApp/Common.r")
-
 ```
 
 ## read profanity
