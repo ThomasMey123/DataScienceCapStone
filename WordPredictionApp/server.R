@@ -2,14 +2,14 @@ library(shiny)
 require(data.table)
 require(dplyr)
 
+nGramDirectory<-"Data"
+ngt1<-read1GramTable(nGramDirectory,"Data/N1Grams.csv")
+ngt2<-readNGramDataTable(nGramDirectory,"Data/N2Grams.csv")
+ngt3<-readNGramDataTable(nGramDirectory,"Data/N3Grams.csv")
 
-n1GramTable<-read.csv("Data/N1GramsKN.csv",colClasses = c("character","integer"))
-n2GramTable<-read.csv("Data/N2GramsKN.csv",colClasses = c("character","character","integer"))
-n3GramTable<-read.csv("Data/N3Grams.csv",colClasses = c("character","character","integer"))
-
-head(n1GramTable)
-head(n2GramTable)
-head(n3GramTable)
+head(ngt1)
+head(ngt2)
+head(ngt2)
 
 source("Common.R")
 Sys.sleep(1)
@@ -17,12 +17,14 @@ Sys.sleep(1)
 shinyServer(
     function(input,output,clientData,session){
         res <- reactive({
-            r<-predictWord(n1GramTable,n2GramTable,n3GramTable,input$text,6)
+            r<-predictWord(ngt1,ngt2,ngt3,input$text,6,TRUE)
             return(r)
         })
 
         observeEvent(input$recs,{
-            updateTextInput(session, "text", value = paste0(input$text, appendBlank(input$text) ,input$recs))
+		    newtext<-paste0(input$text, appendBlank(input$text) ,input$recs)
+            updateTextInput(session, "text", value = newtext)
+			 output$output <- renderText({newtext}) 
         })
         
         observeEvent(input$text, {
