@@ -1,0 +1,58 @@
+---
+title: "BuildShrinkedFiles2"
+author: "Thomas Mey"
+date: "23. April 2016"
+output: html_document
+---
+
+```{r}
+library(data.table)
+library(dplyr)
+
+source("commonProcess.R")
+source("WordPredictionApp/Common.r")
+
+```
+
+```{r}
+
+shrink<- function(fileIn, fileOut, n, doCollapse =""){
+    cmd<-paste("shrinkTable/shrinkTable.exe", fileIn, fileOut, n)
+    cmd<-gsub("/","\\",cmd,fixed=TRUE)
+    system(cmd)
+}
+
+n<-6
+i<-1
+for(i in 1:length(percentages)) {
+    percentage<-percentages[i]
+    nGramDirectory<-makeFileName(dir.root,percentage,dir.ngrams)
+    nGramDirectory<-substr(nGramDirectory,3,10000L)
+    
+    #shrink 1grams
+    f1<-read.csv(makeFileName(nGramDirectory, ngramFile.1KN))
+    write.csv(head(f1,n=n),makeFileName(nGramDirectory, ngramFile.1KNS))
+    
+    f1<-read.csv(makeFileName(nGramDirectory, ngramFile.1))
+    write.csv(head(f1,n=n),makeFileName(nGramDirectory, ngramFile.1S))
+
+    #shrink 2grams
+    f2in<-makeFileName(nGramDirectory, ngramFile.2)
+    f2out<-makeFileName(nGramDirectory, ngramFile.2S)
+    shrink(f2in,f2out,n)
+
+    f2in<-makeFileName(nGramDirectory, ngramFile.2KN)
+    f2out<-makeFileName(nGramDirectory, ngramFile.2KNS)
+    shrink(f2in,f2out,n)
+    
+    #shrink 3grams
+    f3in<-makeFileName(nGramDirectory, ngramFile.3)
+    f3out<-makeFileName(nGramDirectory, ngramFile.3S)
+    shrink(f3in,f3out,n)
+
+}
+
+
+
+```
+
