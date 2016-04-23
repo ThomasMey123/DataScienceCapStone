@@ -5,6 +5,12 @@ require(hash)
 
 debug.print<-FALSE
 
+makeFileName<- function(...) {
+    dots<-list(...)
+    paste0( "./",paste(sapply(dots, paste), collapse="/"))
+    
+}
+
 preprocess<-function(docs,p) {
     msg<-Sys.setlocale("LC_ALL","English")
     
@@ -135,5 +141,5 @@ predictWord <-function(ngt1,ngt2,ngt3,test,n,collapsed=FALSE) {
 }
 
 isBlank<-function(y) substr(y,nchar(y),nchar(y)) == " "
-appendBlank<- function(x) ifelse(isBlank(x), ""," ")
+appendBlank<- function(x) ifelse(isBlank(x) || nchar(x) == 0, ""," ")
 

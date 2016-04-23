@@ -63,17 +63,11 @@ library(numbers)
 percentages<-sapply( 1:11, fibonacci)[2:11]
 percentageTest <- 10
 
-#Common funcitons
+#Common functions
 createDir <- function (d) {
   if(!file.exists(d)) {
     dir.create(d)
   }
-}
-
-makeFileName<- function(...) {
-  dots<-list(...)
-  paste0( "./",paste(sapply(dots, paste), collapse="/"))
-  
 }
 
 downloadFiles<-function(swiftkeyUri, profanityUri) {

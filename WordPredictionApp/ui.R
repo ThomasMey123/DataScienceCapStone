@@ -2,12 +2,9 @@ library(shiny)
 shinyUI(fluidPage(
     titlePanel("Next Word Prediction App"),
     mainPanel(width=12,
-        p("This application allows you to enter some text and allows you to select a recommendation for the next word form a dropdown."),
-        p("Enter text and select a recommendation from the dropdown "),
+        p("Enter some english text in the input field and select a recommendation from the recommendations dropdown."),
 
-        textInput("text", label = "Enter some text"),
-
-        #submitButton("Apply"),
+        textInput("text", label = "Input", width = "80%"),
 
         htmlOutput("selectUI"),
         selectInput('recs', 'Recommendations',choices=c(Choose='', c("")), selectize=FALSE),
@@ -15,7 +12,5 @@ shinyUI(fluidPage(
         hr(),  
 		h3("You entered"),  
         verbatimTextOutput("output")  
-
-        
    ) 
 ))
