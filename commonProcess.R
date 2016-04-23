@@ -21,31 +21,41 @@ ngramFile.1KN  = "N1GramsKN.csv"
 ngramFile.1KNS = "N1GramsKNS.csv"
 ngramFile.2    = "N2Grams.csv"
 ngramFile.2S   = "N2GramsS.csv"
+ngramFile.2SC  = "N2GramsSC.csv"
 ngramFile.2F   = "N2GramsF.csv"
 ngramFile.2KN  = "N2GramsKN.csv"
 ngramFile.2KNS = "N2GramsKNS.csv"
+ngramFile.2KNSC= "N2GramsKNSC.csv"
 ngramFile.3    = "N3Grams.csv"
 ngramFile.3S   = "N3GramsS.csv"
+ngramFile.3SC  = "N3GramsSC.csv"
 ngramFile.3F   = "N3GramsF.csv"
-ngramFile.3KN  = "N3GramsKN.csv"
-ngramFile.3KNS = "N3GramsKNS.csv"
 
+ngramFileCollapse<-NULL
 ngramFile1Test<-NULL
 ngramFile2Test<-NULL
 ngramFile3Test<-NULL
 
-ngramFile1Test[1]<-ngramFile.1
-ngramFile2Test[1]<-ngramFile.2
-ngramFile3Test[1]<-ngramFile.3
+ngramFileCollapse[1]<-FALSE
+ngramFile1Test[1]<-ngramFile.1S
+ngramFile2Test[1]<-ngramFile.2S
+ngramFile3Test[1]<-ngramFile.3S
 
-ngramFile1Test[2]<-ngramFile.1KN
-ngramFile2Test[2]<-ngramFile.2KN
-ngramFile3Test[2]<-ngramFile.3
 
+ngramFileCollapse[2]<-FALSE
+ngramFile1Test[2]<-ngramFile.1KNS
+ngramFile2Test[2]<-ngramFile.2KNS
+ngramFile3Test[2]<-ngramFile.3S
+
+ngramFileCollapse[3]<-FALSE
 ngramFile1Test[3]<-ngramFile.1F
 ngramFile2Test[3]<-ngramFile.2F
 ngramFile3Test[3]<-ngramFile.3
 
+ngramFileCollapse[4]<-TRUE
+ngramFile1Test[4]<-ngramFile.1KNS
+ngramFile2Test[4]<-ngramFile.2KNSC
+ngramFile3Test[4]<-ngramFile.3SC
 
 
 #Sample sizes

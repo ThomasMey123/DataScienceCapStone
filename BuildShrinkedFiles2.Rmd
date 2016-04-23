@@ -17,7 +17,7 @@ source("WordPredictionApp/Common.r")
 ```{r}
 
 shrink<- function(fileIn, fileOut, n, doCollapse =""){
-    cmd<-paste("shrinkTable/shrinkTable.exe", fileIn, fileOut, n)
+    cmd<-paste("shrinkTable/shrinkTable.exe", fileIn, fileOut, n, doCollapse)
     cmd<-gsub("/","\\",cmd,fixed=TRUE)
     system(cmd)
 }
@@ -31,25 +31,34 @@ for(i in 1:length(percentages)) {
     
     #shrink 1grams
     f1<-read.csv(makeFileName(nGramDirectory, ngramFile.1KN))
-    write.csv(head(f1,n=n),makeFileName(nGramDirectory, ngramFile.1KNS))
+    write.csv(head(f1,n=n),makeFileName(nGramDirectory, ngramFile.1KNS),row.names = FALSE)
     
     f1<-read.csv(makeFileName(nGramDirectory, ngramFile.1))
-    write.csv(head(f1,n=n),makeFileName(nGramDirectory, ngramFile.1S))
+    write.csv(head(f1,n=n),makeFileName(nGramDirectory, ngramFile.1S),row.names = FALSE)
 
     #shrink 2grams
     f2in<-makeFileName(nGramDirectory, ngramFile.2)
     f2out<-makeFileName(nGramDirectory, ngramFile.2S)
     shrink(f2in,f2out,n)
 
+    f2out<-makeFileName(nGramDirectory, ngramFile.2SC)
+    shrink(f2in,f2out,n,"collapse")
+
+    
     f2in<-makeFileName(nGramDirectory, ngramFile.2KN)
     f2out<-makeFileName(nGramDirectory, ngramFile.2KNS)
     shrink(f2in,f2out,n)
     
-    #shrink 3grams
+    f2out<-makeFileName(nGramDirectory, ngramFile.2KNSC)
+    shrink(f2in,f2out,n,"collapse")
+
+        #shrink 3grams
     f3in<-makeFileName(nGramDirectory, ngramFile.3)
     f3out<-makeFileName(nGramDirectory, ngramFile.3S)
     shrink(f3in,f3out,n)
 
+    f3out<-makeFileName(nGramDirectory, ngramFile.3SC)
+    shrink(f3in,f3out,n, "collapse")
 }
 
 

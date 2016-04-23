@@ -71,11 +71,11 @@ buildTestSet<-function(directory,p,samplesize) {
 }
 ```
 
-
+ 
 
 ```{r}
 options(mc.cores=2)
-samplesize<-100
+samplesize<-10000
 
 tt<-buildTestSet(makeFileName(dir.root,dir.test),p,samplesize)
 
@@ -83,31 +83,39 @@ head(tt)
 
 testresults<-data.frame()
 testRun<-1
-
+i<-1
 for(i in 1:length(percentages)) {
     #Read NGrams
     percentage<-percentages[i]
     nGramDirectory<-makeFileName(dir.root,percentage,dir.ngrams)
     nGramDirectory<-substr(nGramDirectory,3,10000L)
     
+    j<-4
     for(j in 1:length(ngramFile1Test)){ 
-      n1GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile1Test[j]),
-                            colClasses = c("character","integer"))
-      n2GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile2Test[j]),
-                            colClasses = c("character","character","integer"))
-      n3GramTable<-read.csv(makeFileName(nGramDirectory,ngramFile3Test[j]),
-                            colClasses = c("character","character","integer"))
-  
+      if(j<4){
+          n1GramTable<-read1GramTable(nGramDirectory,ngramFile1Test[j])
+          n2GramTable<-readNGramTable(nGramDirectory,ngramFile2Test[j])
+          n3GramTable<-readNGramTable(nGramDirectory,ngramFile3Test[j])
+          
+      }   
+      else
+      {
+         n1GramTable<-read1GramTable(nGramDirectory,ngramFile1Test[j])
+         n2GramTable<-readNGramDataTable(nGramDirectory,ngramFile2Test[j])
+         n3GramTable<-readNGramDataTable(nGramDirectory,ngramFile3Test[j])
+      }
+      
       #test...
       ptm <- proc.time()
       print(paste("Processing items:",dim(tt)[1]))
       r<-NULL
-      for(i in 1:dim(tt)[1]) {
-        res<-predictWord(n1GramTable,n2GramTable,n3GramTable ,as.character(tt[i,1]),6)
-        r1<-tt[i,2]  %in% res
+      k<-1
+      for(k in 1:dim(tt)[1]) {
+        res<-predictWord(n1GramTable,n2GramTable,n3GramTable ,as.character(tt[k,1]),6,ngramFileCollapse[j])
+        r1<-tt[k,2]  %in% res
         if(debug.print){
           print(paste("item:",i))
-          print(paste("Match:", tt[i,2]))
+          print(paste("Match:", tt[k,2]))
           print(res)
           print(r1)
         }

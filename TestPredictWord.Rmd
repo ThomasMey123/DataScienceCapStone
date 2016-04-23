@@ -1,0 +1,54 @@
+---
+title: "testPredict"
+author: "Thomas Mey"
+date: "23. April 2016"
+output: html_document
+---
+```{r}
+library(data.table)
+library(dplyr)
+library(tm) 
+require(quanteda)
+
+source("commonProcess.R")
+source("WordPredictionApp/Common.r")
+```
+
+## read profanity
+```{r }
+p<-readProfanity()
+``` 
+
+
+```{r}
+collapsed<-FALSE
+n<-6
+percentage<-1
+nGramDirectory<-makeFileName(dir.root,percentage,dir.ngrams)
+nGramDirectory<-substr(nGramDirectory,3,10000L)
+
+ngt1<-read1GramTable(nGramDirectory,ngramFile.1KNS)
+ngt2<-readNGramTable(nGramDirectory,ngramFile.2KNS)
+ngt3<-readNGramTable(nGramDirectory,ngramFile.3S)
+
+ngt2a<-readNGramDataTable(nGramDirectory,ngramFile.2KNSC)
+ngt3a<-readNGramDataTable(nGramDirectory,ngramFile.3SC)
+
+
+
+head(ngt1)
+head(ngt2)
+head(ngt3)
+
+head(ngt2a)
+
+test<-"one of"
+
+
+r<-predictWord(ngt1,ngt2a,ngt3a,test,n, TRUE)
+r
+
+r<-predictWord(ngt1,ngt2,ngt3,test,6)
+r
+```
+

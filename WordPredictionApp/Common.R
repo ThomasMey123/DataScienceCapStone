@@ -1,6 +1,7 @@
 require(data.table)
 require(dplyr)
 require(tm)
+require(hash)
 
 debug.print<-FALSE
 
@@ -56,8 +57,32 @@ makeNGramMatchRegex<-function(x){
     paste0("^",x," ")
 }
 
+read1GramTable<-function(dir,f) { 
+    n1GramTable<-read.csv(makeFileName(dir,f), colClasses = c("character","integer"))
+    n1GramTable
+}
 
-predictWord <-function(ngt1,ngt2,ngt3,test,n) {
+readNGramTable<-function(dir,f) { 
+    nGramTable<-read.csv(makeFileName(dir,f), colClasses = c("character","character","integer"))
+    nGramTable
+}
+
+readNGramDataTable<-function(dir,f) { 
+    nGramTable<-data.frame(read.csv(makeFileName(dir,f), colClasses = c("character","character")))
+    #colnames(nGramTable)<-c("key","value")
+    dt<-data.table(nGramTable)
+    dummy<-dt[t1=="a"]
+    dt
+}
+
+collapsedMatches<-function(dt,x){
+    y<-dt[t1==x]
+    paste0(tstrsplit(y$t2," ",fixed=TRUE))
+}
+
+
+
+predictWord <-function(ngt1,ngt2,ngt3,test,n,collapsed=FALSE) {
     if(debug.print){
         print(paste0("Predicting for \'",test,"\'"))
     }
@@ -67,23 +92,38 @@ predictWord <-function(ngt1,ngt2,ngt3,test,n) {
     test<-d[[1]]$content[1]
     
     testNGram<-getTail(test)
-        
-    testNGram2<-getTail(testNGram,2)
-    f<-filter(ngt3, t1 == testNGram2)
-    
+
     r<-NULL
-    if(nrow(f)>0){
-        r<-f[1:(min(nrow(f),n)),2]
-    } 
+    testNGram2<-getTail(testNGram,2)
+    if( collapsed == FALSE)
+    {
+        f<-filter(ngt3, t1 == testNGram2)
+        if(nrow(f)>0){
+            r<-f[1:(min(nrow(f),n)),2]
+        } 
+    }
+    else
+    {
+        r<-collapsedMatches(ngt3,testNGram2)    
+    }
+    
     
     if(length(r)<n) 
     {
         testNGram1<-getTail(testNGram,1)
-        f<-filter(ngt2, t1 == testNGram1)
-        
-        if(nrow(f)>0){
-            r<-c(r,f[1:min(nrow(f),n-length(r)),2])
-        } 
+        if( collapsed == FALSE)
+        {    
+            f<-filter(ngt2, t1 == testNGram1)
+            
+            if(nrow(f)>0){
+                r<-c(r,f[1:min(nrow(f),n-length(r)),2])
+            }
+        }
+        else
+        {
+            f<-collapsedMatches(ngt2,testNGram1)    
+            r<-c(r,f)
+        }
     }
     
     if(length(r)<n) 
@@ -91,7 +131,7 @@ predictWord <-function(ngt1,ngt2,ngt3,test,n) {
         r2<-ngt1[1:(n-length(r)),1]
         r<-c(r,r2)
     }
-    r
+    r[1:min(length(r),n)]
 }
 
 isBlank<-function(y) substr(y,nchar(y),nchar(y)) == " "
