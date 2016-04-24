@@ -9,10 +9,10 @@
 Word Prediction Application
 ========================================================
 author: Thomas Mey
-date: 17.04.2016
+date: 24.04.2016
 
 
-This slidedeck describes an application that suggests words based on previous input, e.g. if you entered "Let's get" the application would suggest 6 words, e.g. "together". Try out! 
+This slidedeck describes an application that suggests words based on previous input, e.g. if you entered "Let's get" the application would suggest 6 words, e.g. "together". 
 The application can be found [here](https://thomasmey123.shinyapps.io/WordPredictionAppV0/). 
 
 
@@ -26,18 +26,20 @@ The following slides describe the algorithm, the prediction performance and show
 
 How does the model work? - I
 ========================================================
-<small>Simply put the model consists of the following steps: Extracting train and test data, Preprocessing, Building and minimizing NGram-tables, Predicting based on NGrams  
+<small>Simply put the model was built using the following steps: Extracting train and test data, preprocessing, building and minimizing n-gram-tables, predicting based on n-grams.  
 
-- <b>Training samples</b> with different sizes of the original corpus are extracted for two purposes: Analyze how the prediction quality and prediction performance change with different sets of sample sizes. Test data was set aside before sampling the training data. 
-- In the <b>preprocessing</b> (using the tm package) all charcters are removed except a-zA-Z and the single quote (e.g. to treat don't as one word), everything is converted to lowercase and profanitiy terms are removed. Note that the prediciton uses the same preprocessing and only lowercase words will be suggested.
-- <b>NGrams</b> of order 1 to 3 are build with quanteda (because i had performance problems with Weka tokenizer and rm package) an NGram table with NGram frequencies is build for order. Based on those Kneser-Ney smoothing was applied to lower order NGram tables (1 to 2) - again only with frequencies instead of proper probabilities. 
+<b>Training samples</b> with different sizes of the original corpus have been extracted to analyze how the prediction quality and performance change with different sets of sample sizes. Test data was set aside before sampling the training data.
+
+In the <b>preprocessing</b> (using the tm package) all characters except a-zA-Z and single quotes have been removed (e.g. to treat "don't" as one word). The remaining text was converted to lowercase and profanitiy terms were removed. The prediciton algorithm uses the same preprocessing and only lowercase words will be suggested.
+
+<b>n-grams</b> of order 1 to 3 are built using quanteda for performance reasons. Kneser-Ney smoothing was applied to lower order n-gram tables (1 to 2) using frequencies instead of proper probabilities. Using Kneser-Ney smoothing did not yield significant model performance improvements, since the context is very small.
 </small>
 
 How does the model work? - II
 ========================================================
 <small>
-For performance reasons the n-grams have been stored in an optimized way that allows fast access: the first resp. first two words are used as a key for bi/trigrams and the most probable continuations are stored as a blank separated list.
-
+The <b>prediction algorithm</b> uses stupid backoff, i.e. it looks for a trigram that matches the last two words of input, if less than the desired tokens are found it looks for a bigram that matches the last word, finally it looks for a unigram.  
+For <b>application performance</b> reasons the n-grams have been stored in an optimized way that allows fast access: Only n-grams that occur more than once are used. Only the first 6 probable matches are used. Lookup is done using data.table with the last one or two words as key, see table as example:
 ```{r echo=FALSE}
 t2<-read.csv("./data/55/ngrams/N2GramsKNSC.csv")
 colnames(t2)<-c("key", "continuations")
@@ -46,27 +48,42 @@ htmlTable(t2[3627:3631,1:2],rnames =FALSE,align=paste(rep("l",ncol(t2), collapse
           align.header=paste(rep("l",ncol(t2), collapse="")))
 ```
 
-The <b>prediction algorithm</b> uses the NGrams with stupid backoff, i.e. it looks for a trigram that matches the last two words of input, if less than the desired tokens are found it look for a bigram that matches the last word, finally it looks for a unigram.
+Further <b>improvments</b> of prediction quality would include using higher order bigrams or building topic clusters. These have not been implemented since time was too short.
 </small>
 
 Performance of the prediction algorithm
 ========================================================
-
-2.How can you succinctly quantitatively summarize the performance of your prediction algorithm?
 <small>
-<b>Performance as in quality</b> or: how well does the model predict the next word? Out of a testset strings have been subsampled to emulate a real world typing experience, <b>TO DO: example</b>.
-The model performance should match what the application does, so test strings are preprocessed (including lowercase conversion) and 6 word are predicted. If one of the 6 words matches the probe the test result is true, otherwise false.
-
-
-
-Performance as in response time
-
+<b>Performance - Prediction quality:</b>
+Tests have been performed with 10000 samples each to yield a 95% confidence that the percentage of matches is in a +/- 1% range. If one of 6 predicted words equals the test set continuation it is considered as match.  
+<b>Performance - Response time:</b> The algorithm has been tested and optimized for performance, see the following table with selected records:
 </small>
+```{r echo=FALSE}
+library(dplyr)
+library(data.table)
+t2<-read.csv("./data/testresults/testresults.csv")
+t2$ms<-round(t2$ms, digits=2)
+t2$n<-t2$n1+t2$n2+t2$n3
+t2<-select(t2,percentage,variant,n,pq,ms)
+t2<-filter(t2,variant>=3)
+t2$variant<-as.character(t2$variant)
+#t2[t2$variant=="1",2]<-"B-small        "
+#t2[t2$variant=="2",2]<-"C-small KN     "
+t2[t2$variant=="3",2]<-"A-full     "
+t2[t2$variant=="4",2]<-"B-optimized"
+t2<-setorder(t2,percentage,variant)
+t2<-filter(t2,percentage>=21)
+colnames(t2)<-c("% of corpus", "Variant","Total lookup records","% matches", "Response time(ms)")
+suppressWarnings( require(htmlTable))
+htmlTable(t2,rnames =FALSE,align=paste(c("r","l","r","r","r")),
+          align.header=paste(c("r","l","r","r","r")))
+```
 
 The Application
 ========================================================
+<small>
 The application is very simple, it just uses some text input and allows the user to choose one recommendation. This mimics the experience you would have e.g. on a mobile device.
-
+</small>
 ![alt text](applicationScreenshot.png) 
 
 
